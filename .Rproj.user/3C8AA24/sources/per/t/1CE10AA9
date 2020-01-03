@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1578014385085.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "675631918",
+    "id" : "1CE10AA9",
+    "lastKnownWriteTime" : 1578015674,
+    "last_content_update" : 1578015674675,
+    "path" : "~/kaggle/bengali/data-raw/data_tools.py",
+    "project_path" : "data-raw/data_tools.py",
+    "properties" : {
+        "cursorPosition" : "135,14",
+        "scrollLine" : "123",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "python"
+}

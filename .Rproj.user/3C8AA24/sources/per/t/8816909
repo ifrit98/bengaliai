@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1578014696651.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1484228387",
+    "id" : "8816909",
+    "lastKnownWriteTime" : 1578014809,
+    "last_content_update" : 1578014809550,
+    "path" : "~/kaggle/bengali/data-raw/auxmix.py",
+    "project_path" : "data-raw/auxmix.py",
+    "properties" : {
+        "cursorPosition" : "13,0",
+        "scrollLine" : "83",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "python"
+}
