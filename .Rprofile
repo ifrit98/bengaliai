@@ -1,0 +1,6 @@
+library(reticulate)
+library(keras)
+library(tensorflow)
+library(magrittr)
+library(zeallot)
+library(readr)

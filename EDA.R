@@ -7,6 +7,8 @@ test  <- read_csv("data-raw/test.csv")
 map   <- read_csv("data-raw/class_map.csv")
 sub   <- read_csv("data-raw/sample_submission.csv")
 
+source_python("inst/python/load_data.py")
+source_python("inst/python/data_tools.py")
 
 # Loads 1st train image .parquet file as pandas data 
 reticulate::source_python("data-raw/import_pq.py")

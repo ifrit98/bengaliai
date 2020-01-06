@@ -8,17 +8,13 @@ source_python("data-raw/import_pq.py")
 # df_train0 %<>% JSGutils::drop_col(image_id)
 df_test0  %<>% drop_col(image_id)
 
+images <- images0
 
 image_tensors <-
-  lapply(1:length(df_test0[, 1]),
+  lapply(1:(dim(images)[1]),
          function(i) {
-           unname(unlist(df_test0[i,][-1])) %>% as_tensor(dtype = tf$float32)
-         })
-
-
-
-image_tensors_2d <- 
-  lapply(image_tensors, function(x) tf$reshape(x, shape = list(137L, 236L)))
+           images[i,,] %>% JSGutils::as_tensor()
+         }) %>% tf$stack()
 
 
 # TODO: Figure out:
