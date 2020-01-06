@@ -19,8 +19,8 @@ import plotly.graph_objects as go
 
 
 HEIGHT = 137
-WIDTH = 236
-SIZE = 128
+WIDTH  = 236
+SIZE   = 128
 
 
 TRAIN = ['data-raw/train_image_data_0.parquet',
@@ -216,14 +216,13 @@ def plot_count(feature, title, df, size=1):
 
 
 
-
-def plot_count_heatmap(feature1, feature2, df, size=1):  
+def plot_count_heatmap(feature1, feature2, df, size=1, train_df=None):  
     '''
     Heatmap showing the distribution of couple of features
     param: feature1 - ex: vowel_diacritic
     param: feature2 - ex: consonant_diacritic
     '''
-    tmp = train_df.groupby([feature1, feature2])['grapheme'].count()
+    tmp = df.groupby([feature1, feature2])['grapheme'].count()
     df = tmp.reset_index()
     df
     df_m = df.pivot(feature1, feature2, "grapheme")
@@ -238,7 +237,7 @@ def plot_count_heatmap(feature1, feature2, df, size=1):
 
 
 
-def display_image_from_data(data_df, size=5):
+def display_image_from_data(data_df, train_df, size=5):
     '''
     Display grapheme images from sample data
     param: data_df - sample of data
@@ -270,7 +269,7 @@ For this we create a second function, to perform the sampling
 (based on variation of grapheme root, vowel diacritic and consonant 
 diacritic, as parameters to the function).
 """
-def display_writting_variety(data_df, grapheme_root=72, vowel_diacritic=0,\
+def display_writting_variety(data_df, train_df, class_map_df, grapheme_root=72, vowel_diacritic=0,\
                              consonant_diacritic=0, size=5):
     '''
     This function gets a set of grapheme roots, vowel diacritics, consonant diacritics
