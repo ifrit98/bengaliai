@@ -5,9 +5,10 @@ import numpy as np
 from PIL import Image
 from PIL import ImageOps
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
-TRAIN = '../input/grapheme-imgs-128x128/'
+TRAIN_DIR = 'data-raw/'
 
 IMAGE_SIZE = 128
 
@@ -101,7 +102,7 @@ def translate_y(pil_img, level):
                            resample=Image.BILINEAR)
 
 
-augmentations = [
+AUGMENTATIONS = [
     autocontrast, equalize, posterize, rotate, solarize, shear_x, shear_y,
     translate_x, translate_y
 ]
@@ -143,44 +144,49 @@ def augment_and_mix(image, severity=1, width=3, depth=1, alpha=1.):
   ws = np.float32(
       np.random.dirichlet([alpha] * width))
   m = np.float32(np.random.beta(alpha, alpha))
-
+  
   mix = np.zeros_like(image)
   for i in range(width):
     image_aug = image.copy()
     depth = depth if depth > 0 else np.random.randint(1, 4)
     for _ in range(depth):
-      op = np.random.choice(augmentations)
+      op = np.random.choice(AUGMENTATIONS)
       image_aug = apply_op(image_aug, op, severity)
     # Preprocessing commutes since all coefficients are convex
     #mix += ws[i] * normalize(image_aug)
     mix = np.add(mix, ws[i] * normalize(image_aug), out=mix, casting="unsafe")
-
-
   mixed = (1 - m) * normalize(image) + m * mix
   return mixed
 
 
 
-n_imgs = 10
-img_filenames = os.listdir(TRAIN)[:n_imgs]
-img_filenames[:3]
-
+# img_filenames = os.listdir(TRAIN_DIR).sort()
+# test = img_filenames[3]
 
 def visualize(original_image,aug_image):
     fontsize = 18
-    
     f, ax = plt.subplots(1, 2, figsize=(8, 8))
-
     ax[0].imshow(original_image, cmap='gray')
     ax[0].set_title('Original image', fontsize=fontsize)
     ax[1].imshow(aug_image,cmap='gray')
     ax[1].set_title('Augmented image', fontsize=fontsize)
     
     
-    
+
+# TODO: Write functionality to quickly retreive shaped data (137x236)
+# TODO: Choose best data import and augmentation methos to put in one linear script
+# TODO: Create data pipeline to preprocess and potentially store training data
+# TODO: Serializing examples with tf.Dataset vs on-the-fly augmentation?
+
+from inst.python.import_pq import *
+
+test0 = images0
+img = test0[0]
+
 # Visualize augmentations
-for file_name in img_filenames:
-    img = cv2.imread(TRAIN +file_name)
+# TODO: Stepthrough & debug augment_and_mix() so you can use this architecture
+for img in test0:
+    # img = cv2.imread(TRAIN + file_name)
     img_aug = augment_and_mix(img)
     visualize(img, img_aug)
     
