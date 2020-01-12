@@ -1,3 +1,4 @@
 *.parquet
+*.npz
+*.Rproj.user
 
-.Rproj.user
