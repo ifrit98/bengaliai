@@ -23,21 +23,22 @@ def _int64_feature(value):
 def serialize_image(image, labels):
   
   image_string = tf.io.serialize_tensor(image)
-  lables = [tf.io.serialize_tensor(l) for l in labels]
+  # lables = [tf.io.serialize_tensor(l) for l in labels]
   
   feature = {
     'height':          _int64_feature(137), # 137
     'width':           _int64_feature(236),  # 236
     'depth':           _int64_feature(1),  # 1
-    # 'label_consonant': _int64_feature(labels[0]),
-    # 'label_vowel':     _int64_feature(labels[1]),
-    # 'label_grapheme':  _int64_feature(labels[2]),
-    'label_consonant': _bytes_feature(labels[0]),
-    'label_vowel':     _bytes_feature(labels[1]),
-    'label_grapheme':  _bytes_feature(labels[2]),
+    'label_consonant': _int64_feature(labels[0]),
+    'label_vowel':     _int64_feature(labels[1]),
+    'label_grapheme':  _int64_feature(labels[2]),
+    # 'label_consonant': _bytes_feature(labels[0]),
+    # 'label_vowel':     _bytes_feature(labels[1]),
+    # 'label_grapheme':  _bytes_feature(labels[2]),
     'image_raw':       _bytes_feature(image_string),
   }
-  return tf.train.Example(features=tf.train.Features(feature=feature))
+  proto = tf.train.Example(features=tf.train.Features(feature=feature))
+  return proto.SerializeToString() # tf.train.Example(features=tf.train.Features(feature=feature))
   
 
 
@@ -49,29 +50,30 @@ def tf_serialize_image(image_string, labels):
   return tf.reshape(tf_string, ())
   
   
-  
-def write_tfrecords(record_file='images.tfrecords'):
-  with tf.io.TFRecordWriter(record_file) as writer:
-    for filename, label in image_labels.items():
-      image_string = open(filename, 'rb').read()
-      tf_example = serialize_image(image_string, label)
-      writer.write(tf_example.SerializeToString())
-  
+#   
+# def write_tfrecords(record_file='images.tfrecords'):
+#   with tf.io.TFRecordWriter(record_file) as writer:
+#     for filename, label in image_labels.items():
+#       image_string = open(filename, 'rb').read()
+#       tf_example = serialize_image(image_string, label)
+#       writer.write(tf_example.SerializeToString())
+# 
 # V2 writer
-tfrecord_dir = 'tfrecords/data.tfrecords'
-with tf.io.TFRecordWriter(tfrecord_dir) as writer:
-    for image_path, label in zip(image_paths, labels):
-        
-        img = tf.keras.preprocessing.image.load_img(image_path)
-        img_array = tf.keras.preprocessing.image.img_to_array(img)
-        
-        img_array = tf.keras.preprocessing.image.random_zoom(img_array, (0.5,0.5),
-                                         row_axis=0,
-                                         col_axis=1,
-                                         channel_axis=2)
-        
-        img_bytes = tf.io.serialize_tensor(img_array)
-        image_shape = img_array.shape
-        
-        example = serialize_example(img_bytes, label, image_shape)
-        writer.write(example)
+# def write_tfrecordsv2():
+#   tfrecord_dir = 'tfrecords/data.tfrecords'
+#   with tf.io.TFRecordWriter(tfrecord_dir) as writer:
+#       for image_path, label in zip(image_paths, labels):
+#           
+#           img = tf.keras.preprocessing.image.load_img(image_path)
+#           img_array = tf.keras.preprocessing.image.img_to_array(img)
+#           
+#           img_array = tf.keras.preprocessing.image.random_zoom(img_array, (0.5,0.5),
+#                                            row_axis=0,
+#                                            col_axis=1,
+#                                            channel_axis=2)
+#           
+#           img_bytes = tf.io.serialize_tensor(img_array)
+#           image_shape = img_array.shape
+#           
+#           example = serialize_example(img_bytes, label, image_shape)
+#           writer.write(example)

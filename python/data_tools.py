@@ -1,3 +1,4 @@
+import tensorflow as tf
 import cv2
 from tqdm import tqdm_notebook as tqdm
 import zipfile
@@ -35,6 +36,25 @@ TEST = ['data-raw/test_image_data_0.parquet',
 
 OUT_TRAIN = 'train.zip'
 OUT_TEST  = 'test.zip'
+
+
+
+EAGER = "<class 'tensorflow.python.framework.ops.EagerTensor'>"
+
+
+def bytes_feature(value):
+  """Returns a bytes_list from a string / byte."""
+  if isinstance(value, type(tf.constant(0))) and str(type(value)) == EAGER:
+    value = value.numpy() # BytesList won't unpack a string from an EagerTensor.
+  return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
+
+def float_feature(value):
+  """Returns a float_list from a float / double."""
+  return tf.train.Feature(float_list=tf.train.FloatList(value=[value]))
+
+def int64_feature(value):
+  """Returns an int64_list from a bool / enum / int / uint."""
+  return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
 
 
 

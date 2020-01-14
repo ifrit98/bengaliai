@@ -1,5 +1,5 @@
 
-from tensorflow import one_hot
+from tensorflow import one_hot, int8
 import pandas as pd
 from numpy import savez_compressed
 
@@ -40,9 +40,10 @@ def get_dummies(df):
         cols.append(pd.get_dummies(df[col].astype(str)))
     return pd.concat(cols, axis=1)
 
+
 # Convert to one_hot for use with tfdataset
-def one_hot(df, colname='grapheme_root', dtype=tf.int8):
-  x = tf.one_hot(df[colname], depth=len(df[colname].unique()), dtype = dtype)
+def onehot(df, colname='grapheme_root', dtype=int8):
+  x = one_hot(df[colname], depth=len(df[colname].unique()), dtype = dtype)
   return x
 
 
@@ -54,7 +55,9 @@ for i in range(1,4):
   ).drop(['image_id'], axis=1)
   X_train = train_df.drop(['grapheme_root', 'vowel_diacritic', 'consonant_diacritic', 'grapheme'], axis=1)
   X_train = resize(X_train) / 255
+  # X_train = X_train / 255 # Don't resize
   X_train = X_train.values.reshape(-1, IMG_SIZE, IMG_SIZE, N_CHANNELS)
+  # X_train = X_train.values.reshape(-1, HEIGHT, WIDTH, N_CHANNELS)
   Y_train_root = pd.get_dummies(train_df['grapheme_root']).values
   Y_train_vowel = pd.get_dummies(train_df['vowel_diacritic']).values
   Y_train_consonant = pd.get_dummies(train_df['consonant_diacritic']).values
@@ -62,3 +65,4 @@ for i in range(1,4):
   savez_compressed(f"data-npz/train_root_labels{i}", train_root_labels=Y_train_root)
   savez_compressed(f"data-npz/train_vowel_labels{i}", train_vowel_labels=Y_train_vowel)
   savez_compressed(f"data-npz/train_consonant_labels{i}", train_consonant_labels=Y_train_consonant)
+  del(train_df)

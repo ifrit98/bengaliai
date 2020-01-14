@@ -1,16 +1,18 @@
-r0 <- np$load("data-npz/train_root_labels0.npz")
+r0 <- np$load("data-npz/resized_64/train_root_labels0.npz")
 r0 <- r0$f[['train_root_labels']]
 
-v0 <- np$load("data-npz/train_vowel_labels0.npz")
+v0 <- np$load("data-npz/resized_64/train_vowel_labels0.npz")
 v0 <- v0$f[['train_vowel_labels']]
 
-c0 <- np$load("data-npz/train_consonant_labels0.npz") 
+c0 <- np$load("data-npz/resized_64/train_consonant_labels0.npz") 
 c0 <- c0$f[['train_consonant_labels']]
 
-t0 <- np$load("data-npz/train_images0.npz") 
+t0 <- np$load("data-npz/resized_64/train_images0.npz") 
 df <- t0$f[['train_images']]
 
 
+decode_onehot <- function(x) tf$argmax(x)$numpy() %>% as.integer()
+  
 
 train <- as_tensor(df)
 
@@ -26,11 +28,44 @@ tlabels <- list(rt, ct, vt)
 
 train_df <- train$numpy()
 
+source_python("python/data_tools.py")
 
 img <- train[1,,,]
-img_str <- img %>% tf$io$serialize_tensor()
-labs <- c(rt[1,], vt[1,], ct[1,])
-labels <- labs %>% lapply(function(x) as.integer(tf$argmax(x)$numpy()))
+labs <- c(rt[1,], vt[1,], ct[1,]) %>% lapply(decode_onehot)
+
+serialize_image <- function(image, labels) {
+
+  image_str <- img %>% tf$io$serialize_tensor()
+  
+  raw_image = bytes_feature(image_str)
+  label_consonant = int64_feature(labs[[1]])
+  label_vowel = int64_feature(labs[[2]])
+  label_grapheme = int64_feature(labs[[3]])
+  
+  feature <- list(
+    image = raw_image,
+    cons  = label_consonant,
+    vowel = label_vowel,
+    graph = label_grapheme
+  )
+  
+  proto <- tf$train$Example(features=tf$train$Features(feature=feature))
+
+  proto$SerializeToString()
+}
+
+
+# Serialize
+serialized_example <- serialize_image(img, labs)
+
+# Get it back
+proto1 <- tf$train$Example$FromString(serialized_example)
+
+# TODO: Get tfrecrod writer working
+# TODO: Cleanup input pipeline (.pq -> resize -> .npz -> tfrecord -> tfdataset -> augment)
+# TODO: To augment before .npz, tfrecord, or after? 
+# TODO: No .npz conversion?  Do all online in python right through to tfrecord?
+# TODO: Start training and get a basic eval feedback loop set up
 
 # SUCCESS!
 source_python("python/serialize_img.py")
@@ -48,14 +83,36 @@ serialize_img_wrapper <- function(image, labels) {
 # TODO: Use raw data when importing from .pq and .csv for features, maybe from R dataframes
 source_python("python/load_data.py")
 ## -- start here -- ##
+# m <- as.matrix(test_df)
+# dim(m) <- c(12, 3, 32334)
+# img <- m[1,,]
 
+img  <- train_df[1,,]
+labs <- img[1,(length(img)-2L):length(img)-1L] %>% as.list() %>% as.integer() # get labels
+img[,(length(img)-3L):length(img)] <- NULL # Remove labels from img array
+m <- as.matrix(img)
+dim(m) <- c(1, 137, 236)
 
+# converts to data.frame?
+x <- r_to_py(img)
+x <- x$values %>% np$reshape(list(137L, 236L))
+
+# what's the memory complexity of this? Copied?
+a <- np$asarray(img)
+a1 <- np$reshape(a, list(137L, 236L, 1L))
+dim(a1)
+
+serialize_image(img, labs)
+  
+
+# TODO: Probably still just easier in Python...
 # TODO: Create tfdataset impairment blocks in R for auxmix.py and others to pipe through here
 # TODO: Create tfrecords dataset from tensor slices?
 # TODO: Implement Dynamic Routing Capsule network?
 # TODO: Evaluation scripts and metrics
 # TODO: Implement CLR and LR range test for this dataset
 # TODO: implement tf serialize methods/procedures
+# TODO: Do augmix/preprocessing on save/write to tfrecord with dataset_map call?
 library(tfdatasets)
 tds <- tensor_slices_dataset(tuple(train, tuple(rt, ct, vt))) #%>% 
   dataset_batch(128L, drop_remainder = TRUE) %>% 
