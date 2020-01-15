@@ -18,7 +18,8 @@ TEST = ['data-raw/test_image_data_0.parquet',
         
 
 
-test1 = pd.read_parquet(TEST[0])
-pd = test1
+test1 = pd.read_parquet(TEST[1])
+test1 = test1.drop(columns=['image_id'])
+df = test1
 
   

@@ -2,7 +2,7 @@
 from tensorflow import one_hot, int8
 import pandas as pd
 from numpy import savez_compressed
-
+import cv2
 from tqdm import tqdm
 
 
@@ -13,7 +13,7 @@ sample_sub_df = pd.read_csv('data-raw/sample_submission.csv')
 
 
 
-IMG_SIZE = 64
+IMG_SIZE = 128
 N_CHANNELS = 1
 HEIGHT = 137
 WIDTH = 236
@@ -24,11 +24,11 @@ def resize(df, size=IMG_SIZE, need_progress_bar=True):
     resized = {}
     if need_progress_bar:
         for i in tqdm(range(df.shape[0])):
-            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT,WIDTH),(size, size))
+            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT, WIDTH),(size, size))
             resized[df.index[i]] = image.reshape(-1)
     else:
         for i in range(df.shape[0]):
-            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT,WIDTH),(size, size))
+            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT, WIDTH),(size, size))
             resized[df.index[i]] = image.reshape(-1)
     resized = pd.DataFrame(resized).T
     return resized
@@ -46,9 +46,9 @@ def onehot(df, colname='grapheme_root', dtype=int8):
   x = one_hot(df[colname], depth=len(df[colname].unique()), dtype = dtype)
   return x
 
+# TODO: Augment here before saving as .npz?
 
-
-for i in range(1,4):
+for i in range(1):
   train_df = pd.merge(
     pd.read_parquet(f'data-raw/train_image_data_{i}.parquet'),
     train_df_, on='image_id'
@@ -61,8 +61,8 @@ for i in range(1,4):
   Y_train_root = pd.get_dummies(train_df['grapheme_root']).values
   Y_train_vowel = pd.get_dummies(train_df['vowel_diacritic']).values
   Y_train_consonant = pd.get_dummies(train_df['consonant_diacritic']).values
-  savez_compressed(f"data-npz/train_images{i}", train_images=X_train)
-  savez_compressed(f"data-npz/train_root_labels{i}", train_root_labels=Y_train_root)
-  savez_compressed(f"data-npz/train_vowel_labels{i}", train_vowel_labels=Y_train_vowel)
-  savez_compressed(f"data-npz/train_consonant_labels{i}", train_consonant_labels=Y_train_consonant)
+  savez_compressed(f"data-npz/resized_128/train_images{i}", train_images=X_train)
+  savez_compressed(f"data-npz/resized_128/train_root_labels{i}", train_root_labels=Y_train_root)
+  savez_compressed(f"data-npz/resized_128/train_vowel_labels{i}", train_vowel_labels=Y_train_vowel)
+  savez_compressed(f"data-npz/resized_128/train_consonant_labels{i}", train_consonant_labels=Y_train_consonant)
   del(train_df)

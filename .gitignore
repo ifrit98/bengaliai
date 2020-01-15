@@ -1,5 +1,9 @@
+data
+data/
+logs
+logs/
 *.parquet
 *.npz
 *.Rproj.user
-
+*.pq
 .Rproj.user

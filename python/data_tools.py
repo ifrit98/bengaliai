@@ -22,17 +22,17 @@ import plotly.graph_objects as go
 HEIGHT = 137
 WIDTH  = 236
 SIZE   = 128
+IMG_SIZE = SIZE
 
-
-TRAIN = ['data-raw/train_image_data_0.parquet',
-         'data-raw/train_image_data_1.parquet',
-         'data-raw/train_image_data_2.parquet',
-         'data-raw/train_image_data_3.parquet']
+TRAIN = ['data/data-raw/train_image_data_0.parquet',
+         'data/data-raw/train_image_data_1.parquet',
+         'data/data-raw/train_image_data_2.parquet',
+         'data/data-raw/train_image_data_3.parquet']
          
-TEST = ['data-raw/test_image_data_0.parquet',
-        'data-raw/test_image_data_1.parquet',
-        'data-raw/test_image_data_2.parquet',
-        'data-raw/test_image_data_3.parquet']
+TEST = ['data/data-raw/test_image_data_0.parquet',
+        'data/data-raw/test_image_data_1.parquet',
+        'data/data-raw/test_image_data_2.parquet',
+        'data/data-raw/test_image_data_3.parquet']
 
 OUT_TRAIN = 'train.zip'
 OUT_TEST  = 'test.zip'
@@ -72,6 +72,38 @@ def load_all_data(datatype="test"):
         dfs.append(imgs)
     return np.concatenate(dfs, axis=0)
     
+
+
+
+def resize(df, size=IMG_SIZE, need_progress_bar=True):
+    resized = {}
+    if need_progress_bar:
+        for i in tqdm(range(df.shape[0])):
+            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT, WIDTH),(size, size))
+            resized[df.index[i]] = image.reshape(-1)
+    else:
+        for i in range(df.shape[0]):
+            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT, WIDTH),(size, size))
+            resized[df.index[i]] = image.reshape(-1)
+    resized = pd.DataFrame(resized).T
+    return resized
+    
+    
+    
+def get_dummies(df):
+    cols = []
+    for col in df:
+        cols.append(pd.get_dummies(df[col].astype(str)))
+    return pd.concat(cols, axis=1)
+
+
+
+# Convert to one_hot for use with tfdataset
+def onehot(df, colname='grapheme_root', dtype=tf.int8):
+  x = one_hot(df[colname], depth=len(df[colname].unique()), dtype = dtype)
+  return x
+
+
     
     
 def merge_dfs(dfs):
@@ -107,8 +139,8 @@ def bbox(img):
     cmin, cmax = np.where(cols)[0][[0, -1]]
     return rmin, rmax, cmin, cmax
 
-
-
+  
+# From: https://www.kaggle.com/iafoss/image-preprocessing-128x128
 def crop_resize(img0, size=SIZE, pad=16):
     #crop a box around pixels large than the threshold 
     #some images contain line at the sides

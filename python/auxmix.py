@@ -6,11 +6,17 @@ from PIL import Image
 from PIL import ImageOps
 import matplotlib.pyplot as plt
 import pandas as pd
+from tqdm import tqdm
 
 
 TRAIN_DIR = 'data-raw/'
 
 IMAGE_SIZE = 128
+IMG_SIZE = IMAGE_SIZE
+HEIGHT = 137
+WIDTH = 236
+
+
 
 
 def int_parameter(level, maxval):
@@ -36,6 +42,20 @@ def float_parameter(level, maxval):
   """
   return float(level) * maxval / 10.
 
+
+def resize(df, size=IMG_SIZE, need_progress_bar=True):
+    resized = {}
+    if need_progress_bar:
+        for i in tqdm(range(df.shape[0])):
+            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT, WIDTH),(size, size))
+            resized[df.index[i]] = image.reshape(-1)
+    else:
+        for i in range(df.shape[0]):
+            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT, WIDTH),(size, size))
+            resized[df.index[i]] = image.reshape(-1)
+    resized = pd.DataFrame(resized).T
+    return resized
+    
 
 def sample_level(n):
   return np.random.uniform(low=0.1, high=n)
@@ -114,6 +134,7 @@ MEAN = [ 0.06922848809290576,  0.06922848809290576,  0.06922848809290576]
 STD  = [ 0.20515700083327537,  0.20515700083327537,  0.20515700083327537]
 
 
+# Questionable ? Test this to make sure normalization is correct
 def normalize(image):
   """Normalize input image channel-wise to zero mean and unit variance."""
   image = image.transpose(2, 0, 1)  # Switch to channel-first
@@ -122,6 +143,8 @@ def normalize(image):
   return image.transpose(1, 2, 0)
 
 
+# TODO: Tuple out of range error in Image.fromarray(npa) 
+## Must be a 2D numpy array (e.g. np.reshape(image, [137, 236]), not 3D)
 def apply_op(image, op, severity):
   image = np.clip(image * 255., 0, 255).astype(np.uint8)
   pil_img = Image.fromarray(image)  # Convert to PIL.Image
@@ -145,17 +168,17 @@ def augment_and_mix(image, severity=1, width=3, depth=1, alpha=1.):
       np.random.dirichlet([alpha] * width))
   m = np.float32(np.random.beta(alpha, alpha))
   
-  mix = np.zeros_like(image)
+  mix = np.zeros(shape=[IMAGE_SIZE, IMAGE_SIZE, 1])
   for i in range(width):
     image_aug = image.copy()
     depth = depth if depth > 0 else np.random.randint(1, 4)
     for _ in range(depth):
       op = np.random.choice(AUGMENTATIONS)
-      image_aug = apply_op(image_aug, op, severity)
+      image_aug = np.expand_dims(apply_op(image_aug, op, severity), -1)
     # Preprocessing commutes since all coefficients are convex
     #mix += ws[i] * normalize(image_aug)
-    mix = np.add(mix, ws[i] * normalize(image_aug), out=mix, casting="unsafe")
-  mixed = (1 - m) * normalize(image) + m * mix
+    mix = np.add(mix, ws[i] * normalize(image_aug),casting="unsafe")
+  mixed = (1 - m) * normalize(np.expand_dims(image, -1)) + m * mix
   return mixed
 
 
@@ -170,6 +193,7 @@ def visualize(original_image,aug_image):
     ax[0].set_title('Original image', fontsize=fontsize)
     ax[1].imshow(aug_image,cmap='gray')
     ax[1].set_title('Augmented image', fontsize=fontsize)
+    plt.show()
     
     
 
@@ -178,17 +202,18 @@ def visualize(original_image,aug_image):
 # TODO: Create data pipeline to preprocess and potentially store training data
 # TODO: Serializing examples with tf.Dataset vs on-the-fly augmentation?
 
-from inst.python.import_pq import *
-
-test0 = images0
-img = test0[0]
+from python.import_pd import *
 
 # Visualize augmentations
 # TODO: Stepthrough & debug augment_and_mix() so you can use this architecture
-for img in test0:
-    # img = cv2.imread(TRAIN + file_name)
-    img_aug = augment_and_mix(img)
-    visualize(img, img_aug)
+
+resized_df = resize(test1)
+
+for idx, row in resized_df.iterrows():
+    img = row.values
+    img_og = np.reshape(img, [IMAGE_SIZE, IMAGE_SIZE]) # AUGMIX EXPECTS SQUARE IMAGE!
+    img_aug = augment_and_mix(img_og)
+    visualize(img_og, img_aug)
     
     
     
