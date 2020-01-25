@@ -1,15 +1,13 @@
 
-HEIGHT <- 64
-WIDTH  <- 64
 
-input <- layer_input(shape = list(HEIGHT, WIDTH, 1L))
+input <- layer_input(shape = list(FLAGS$height, FLAGS$width, 1L))
 
 base <- input %>% 
   layer_conv_2d(16L, 3L, activation = 'relu') %>% 
   layer_conv_2d(32L, 5L, activation = 'relu') %>% 
   layer_batch_normalization() %>% 
+  layer_conv_2d(48L, 8L, activation = 'relu') %>% 
   layer_conv_2d(64L, 10L, activation = 'relu') %>% 
-  layer_conv_2d(96L, 12L, activation = 'relu') %>% 
   layer_batch_normalization() %>% 
   layer_global_max_pooling_2d()
 

@@ -8,8 +8,12 @@ ds <- ds_parsed %>%
     tuple(x$image_raw,
           tuple(x$label_grapheme, x$label_consonant, x$label_vowel))
   }) %>%
-  dataset_shuffle(100L) %>% 
-  dataset_batch(128L) %>%
-  dataset_prefetch(10L)
+  dataset_shuffle(10L) %>% 
+  dataset_batch(FLAGS$batch_size) %>%
+  dataset_prefetch(2L)
 
-val_ds <- ds$take(100L)
+val_ds <- ds$take(FLAGS$val_size)
+
+
+# TODO: Do dataset preprocessing here?
+# TODO: auxmix, scaling, and normalization

@@ -3,6 +3,7 @@ import tensorflow as tf
 HEIGHT = 137
 WIDTH  = 236
 
+
 filename = "data/data-tfrecord/train0.tfrecord"
 
 # Read back in to validate
@@ -29,6 +30,7 @@ def _parse_example(example_proto):
 
 def parse_image(x):
   x['image_raw'] = tf.io.parse_tensor(x['image_raw'], tf.uint8)
+  x['image_raw'].set_shape([HEIGHT, WIDTH, 1])
   return x
 
 
@@ -39,9 +41,20 @@ ds_raw = raw_dataset.map(_parse_example)
 ds_parsed = ds_raw.map(parse_image)
 
 
-# it2 = tf.compat.v1.data.make_one_shot_iterator(ds2)
+def _compact(x):
+  image  = x['image_raw']
+  # labels = {x['label_grapheme'], x['label_consonant'], x['label_vowel']}
+  labels = (x['label_grapheme'], x['label_consonant'], x['label_vowel'])
+  return {'image': image, 'labels': labels}
+
+
+# ds = ds_parsed.map(_compact)
+# ds = ds.batch(BATCH, drop_remainder=True)
+
+# it = tf.compat.v1.data.make_one_shot_iterator(ds)
+# b = it.get_next()
 
 # for i in range(10):
-#   b = it2.get_next()
+#   b = it.get_next()
 #   labels = np.asarray([b['label_consonant'], b['label_vowel'], b['label_grapheme']])
 #   print(labels)

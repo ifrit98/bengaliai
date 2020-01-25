@@ -6,4 +6,4 @@ logs/
 *.npz
 *.Rproj.user
 *.pq
-.Rproj.user
+.Rproj.user*

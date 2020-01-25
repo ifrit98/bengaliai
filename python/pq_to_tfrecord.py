@@ -1,10 +1,14 @@
+#!/usr/bin/python
+
 
 import tensorflow as tf
 import pandas as pd
+from data_tools import crop_resize
 
 HEIGHT = 137
 WIDTH  = 236
-BATCH  = 128
+BATCH  = 32
+RESIZE = 128
 
 filename = 'train{0}.tfrecord'
 
@@ -35,7 +39,6 @@ def _int64_feature(value):
 
 
 
-
 def serialize_example(image, labels):
   image_string = tf.io.serialize_tensor(image)
   feature = {
@@ -60,8 +63,8 @@ def tf_serialize_image(image_string, labels):
   return tf.reshape(tf_string, ())
   
 
-
-for i in range(1, len(TRAIN)):
+# Training data
+for i in range(len(TRAIN)):
   train = pd.read_parquet(TRAIN[i]).drop(columns=['image_id'])
   with tf.io.TFRecordWriter(filename.format(i)) as writer:
     for idx, row in train.iterrows():
@@ -70,6 +73,40 @@ for i in range(1, len(TRAIN)):
       serialized_ex = serialize_example(img, labs)
       writer.write(serialized_ex)
     
+# Test data
+for i in range(len(TEST)):
+  test = pd.read_parquet(TEST[i]).drop(columns=['image_id'])
+  with tf.io.TFRecordWriter(filename.format(i)) as writer:
+    for idx, row in test.iterrows():
+      crop_resize(row.values, pad=0)
+      img = row.values.reshape([HEIGHT, WIDTH, 1])
+      labs = train_md.iloc[int(idx + (i * len(train)))].values[1:-1] # root, vowel, consonant
+      serialized_ex = serialize_example(img, labs)
+      writer.write(serialized_ex)
+    
     
 
+i = 1
+test = pd.read_parquet(TEST[i]).drop(columns=['image_id'])
+x = test.iloc[i].values
+x = x.reshape([HEIGHT, WIDTH])
+img = crop_resize(x, size=RESIZE, size2= 75, pad=0)
+df = resize(test, RESIZE)
+im2 = df.iloc[i].values
+im2 = im2.reshape([RESIZE, RESIZE])
 
+import matplotlib.pyplot as plt
+plt.figure()
+plt.imshow(x)
+plt.show()
+
+
+# Scale AND resize
+plt.figure()
+plt.imshow(img)
+plt.show()
+
+# Only resize
+plt.figure()
+plt.imshow(im2)
+plt.show()
