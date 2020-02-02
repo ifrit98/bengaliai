@@ -1,6 +1,9 @@
 
 source_python("python/read_tfrecord_dataset.py")
 
+if (!exists_here("FLAGS")) {
+  import_from("flags.R", "FLAGS")
+}
 
 ds <- ds_parsed %>%
   dataset_map(function(x) {

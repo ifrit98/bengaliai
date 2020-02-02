@@ -6,9 +6,10 @@ library(magrittr)
 library(zeallot)
 library(readr)
 library(tibble)
-library(dplyr)
-# library(JSGutils)
-# library(deepR)
+library(env.utils)
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(deepR))
+suppressPackageStartupMessages(library(JSGutils))
 
 
 source("labels.R")
