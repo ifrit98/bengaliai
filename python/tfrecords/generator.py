@@ -1,9 +1,9 @@
 from neid_dl.train.dataset_utils import read_dataset
 import tensorflow as tf
 # os.uname global var
-WINSTON_SM = "/mnt/md0/georgej/sample-classifier-predictions/4fsk"
-WINSTON_FP = "/mnt/md0/demod/sample-classifier-predictions/4fsk/2019-05-23T21-03-26.661399Z"
-LOCAL_FP = "/mnt/ipahome/georgej/dev/sample-classifier-predictions/4fsk"
+WINSTON_SM = ""
+WINSTON_FP = ""
+LOCAL_FP = ""
 
 
 def batch_generator(fp):

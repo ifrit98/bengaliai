@@ -1,0 +1,6 @@
+TODO:
+  + chunk tfrecords to ~100mb/file 
+  + get a baseline model training with working data pipeline
+  + implement submission formatting script
+  + add augmentations # https://www.kaggle.com/iafoss/image-preprocessing-128x128
+  + visualize results

@@ -10,7 +10,7 @@ class_map <- readr::read_csv(
 
 train_lab <- readr::read_csv("data/data-raw/train.csv")
 test_lab  <- readr::read_csv("data/data-raw/test.csv")
-sub       <- readr::read_csv("data/data-raw/sample_submission.csv")
+# sub       <- readr::read_csv("data/data-raw/sample_submission.csv")
 
 names(class_map) <- c("type", "index", "root")
 
