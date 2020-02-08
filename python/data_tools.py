@@ -42,26 +42,9 @@ OUT_TEST  = 'test.zip'
 EAGER = "<class 'tensorflow.python.framework.ops.EagerTensor'>"
 
 
-def bytes_feature(value):
-  """Returns a bytes_list from a string / byte."""
-  if isinstance(value, type(tf.constant(0))) and str(type(value)) == EAGER:
-    value = value.numpy() # BytesList won't unpack a string from an EagerTensor.
-  return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
-
-def float_feature(value):
-  """Returns a float_list from a float / double."""
-  return tf.train.Feature(float_list=tf.train.FloatList(value=[value]))
-
-def int64_feature(value):
-  """Returns an int64_list from a bool / enum / int / uint."""
-  return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
-
-
-
 def load_as_npa(file=TEST[0]):
     df = pd.read_parquet(file)
     return df.iloc[:, 0], df.iloc[:, 1:].values.reshape(-1, HEIGHT, WIDTH)
-
 
 
 def load_all_data(datatype="test"):
@@ -72,7 +55,6 @@ def load_all_data(datatype="test"):
         dfs.append(imgs)
     return np.concatenate(dfs, axis=0)
     
-
 
 def resize(df, size=IMG_SIZE, need_progress_bar=True):
     resized = {}
@@ -88,7 +70,6 @@ def resize(df, size=IMG_SIZE, need_progress_bar=True):
     return resized
     
     
-    
 def get_dummies(df):
     cols = []
     for col in df:
@@ -96,12 +77,10 @@ def get_dummies(df):
     return pd.concat(cols, axis=1)
 
 
-
 # Convert to one_hot for use with tfdataset
 def onehot(df, colname='grapheme_root', dtype=tf.int8):
   x = one_hot(df[colname], depth=len(df[colname].unique()), dtype = dtype)
   return x
-
 
     
     
@@ -113,12 +92,10 @@ def merge_dfs(dfs):
     return full_df
     
 
-
 def get_data_tensors(npa=None, file=TEST[0]):
     if npa is None:
         _, npa = load_as_npa(file)
     return tf.convert_to_tensor(npa)
-
 
 
 def image_from_char(char):
@@ -129,7 +106,7 @@ def image_from_char(char):
     draw.text(((WIDTH - w) / 2,(HEIGHT - h) / 2), char, font=myfont)
 
     return image
-
+    
 
 def bbox(img):
     rows = np.any(img, axis=1)
@@ -162,11 +139,9 @@ def crop_resize(img0, size=SIZE, size2=None, pad=16):
 
 
 
-
 def read_parquet_file(data='TRAIN', idx=0):
     DATA = TRAIN if data == 'TRAIN' else TEST
     return pd.read_parquet(DATA[idx])
-
 
 
 def create_and_plot_crops(df, n_imgs=3):
@@ -188,7 +163,6 @@ def create_and_plot_crops(df, n_imgs=3):
         
     # Why is only first row plotted?
     plt.show()
-
 
 
 def write_data_zip_file(data="TEST"):

@@ -32,6 +32,12 @@ def parse_image(x):
   x['image_raw'] = tf.io.parse_tensor(x['image_raw'], tf.uint8)
   x['image_raw'].set_shape([HEIGHT, WIDTH, 1])
   return x
+  
+
+def _compact(x):
+  image  = x['image_raw']
+  labels = (x['label_grapheme'], x['label_consonant'], x['label_vowel'])
+  return {'image': image, 'labels': labels}
 
 
 # First parse example
@@ -41,11 +47,10 @@ ds_raw = raw_dataset.map(_parse_example)
 ds_parsed = ds_raw.map(parse_image)
 
 
-def _compact(x):
-  image  = x['image_raw']
-  # labels = {x['label_grapheme'], x['label_consonant'], x['label_vowel']}
-  labels = (x['label_grapheme'], x['label_consonant'], x['label_vowel'])
-  return {'image': image, 'labels': labels}
+def _parse_tfrecord(example_proto):
+  single_dict = tf.io.parse_single_example(example_proto, feature_description)
+  
+  
 
 
 # ds = ds_parsed.map(_compact)
