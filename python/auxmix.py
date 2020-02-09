@@ -9,6 +9,12 @@ import pandas as pd
 from tqdm import tqdm
 
 
+"""Read through for augmentation ideas:
+  https://www.kaggle.com/corochann/bengali-seresnext-prediction-with-pytorch
+  https://www.kaggle.com/iafoss/image-preprocessing-128x128
+  https://www.kaggle.com/sgalella/bengali-ai-grapheme-classification-preprocessing
+"""
+
 TRAIN_DIR = 'data-raw/'
 
 IMAGE_SIZE = 128
@@ -182,11 +188,10 @@ def augment_and_mix(image, severity=1, width=3, depth=1, alpha=1.):
   return mixed
 
 
-
 # img_filenames = os.listdir(TRAIN_DIR).sort()
 # test = img_filenames[3]
 
-def visualize(original_image,aug_image):
+def visualize(original_image, aug_image):
     fontsize = 18
     f, ax = plt.subplots(1, 2, figsize=(8, 8))
     ax[0].imshow(original_image, cmap='gray')
@@ -194,7 +199,6 @@ def visualize(original_image,aug_image):
     ax[1].imshow(aug_image,cmap='gray')
     ax[1].set_title('Augmented image', fontsize=fontsize)
     plt.show()
-    
     
 
 # TODO: Write functionality to quickly retreive shaped data (137x236)

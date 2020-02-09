@@ -69,7 +69,30 @@ def resize(df, size=IMG_SIZE, need_progress_bar=True):
     resized = pd.DataFrame(resized).T
     return resized
     
-    
+
+# taken from https://www.kaggle.com/iafoss/image-preprocessing-128x128
+MEAN = [ 0.06922848809290576,  0.06922848809290576,  0.06922848809290576]
+STD  = [ 0.20515700083327537,  0.20515700083327537,  0.20515700083327537]
+
+# Questionable ? Test this to make sure normalization is correct with above values
+def normalize(image):
+  """Normalize input image channel-wise to zero mean and unit variance."""
+  image = image.transpose(2, 0, 1)  # Switch to channel-first
+  mean, std = np.array(MEAN), np.array(STD)
+  image = (image - mean[:, None, None]) / std[:, None, None]
+  return image.transpose(1, 2, 0)
+
+
+def normalize_simple(image, maximum=255.0, v2=True):
+  if v2 is True and len(image.shape) == 1:
+    image = [image]
+  
+  normalized = np.asarray(map(lambda x: (x - np.mean(x)) / np.std(x), image)) \
+    if v2 else (maximum - image).astype(np.float64) / maximum
+  
+  return normalized
+
+
 def get_dummies(df):
     cols = []
     for col in df:
@@ -108,6 +131,7 @@ def image_from_char(char):
     return image
     
 
+# From: https://www.kaggle.com/iafoss/image-preprocessing-128x128
 def bbox(img):
     rows = np.any(img, axis=1)
     cols = np.any(img, axis=0)
@@ -115,28 +139,23 @@ def bbox(img):
     cmin, cmax = np.where(cols)[0][[0, -1]]
     return rmin, rmax, cmin, cmax
 
-  
-# From: https://www.kaggle.com/iafoss/image-preprocessing-128x128
-def crop_resize(img0, size=SIZE, size2=None, pad=16):
-    if size2 is None:
-      size2 = size
+def crop_resize(img0, size=SIZE, pad=16):
     #crop a box around pixels large than the threshold 
     #some images contain line at the sides
-    ymin, ymax, xmin, xmax = bbox(img0[5:-5,5:-5] > 80)
+    ymin,ymax,xmin,xmax = bbox(img0[5:-5,5:-5] > 80)
     #cropping may cut too much, so we need to add it back
     xmin = xmin - 13 if (xmin > 13) else 0
     ymin = ymin - 10 if (ymin > 10) else 0
     xmax = xmax + 13 if (xmax < WIDTH - 13) else WIDTH
     ymax = ymax + 10 if (ymax < HEIGHT - 10) else HEIGHT
-    img  = img0[ymin:ymax,xmin:xmax]
+    img = img0[ymin:ymax,xmin:xmax]
     #remove lo intensity pixels as noise
     img[img < 28] = 0
     lx, ly = xmax-xmin,ymax-ymin
     l = max(lx,ly) + pad
     #make sure that the aspect ratio is kept in rescaling
     img = np.pad(img, [((l-ly)//2,), ((l-lx)//2,)], mode='constant')
-    return cv2.resize(img,(size,size2))
-
+    return cv2.resize(img,(size,size))
 
 
 def read_parquet_file(data='TRAIN', idx=0):

@@ -1,17 +1,21 @@
 
-source_python("python/read_tfrecord_dataset.py")
+source_python("python/tfrecords/load_tfrecords.py")
+# import_from('python/tfrecords/tfrecord_utils.py', replay_generator)
 
-# if (!exists_here("FLAGS")) {
-#   import_from("flags.R", "FLAGS")
-# }
+if (!exists_here("FLAGS")) {
+  import_from("flags.R", FLAGS)
+}
 
-source("flags.R")
+# ds_raw <- replay_generator(FLAGS$source_dir)
 
-ds <- ds_parsed %>%
+
+(b <- next_batch(ds_raw))
+
+ds <- ds_raw %>%
   dataset_map(function(x) {
-    x$image_raw$set_shape(list(HEIGHT, WIDTH, 1L))
-    tuple(x$image_raw,
-          tuple(x$label_grapheme, x$label_consonant, x$label_vowel))
+    x$image <- tf$reshape(x$image, list(137L, 236L, 1L))
+    tuple(x$image,
+          tuple(x$grapheme, x$consonant, x$vowel))
   }) %>%
   dataset_shuffle(10L) %>% 
   dataset_batch(FLAGS$batch_size) %>%
@@ -19,6 +23,7 @@ ds <- ds_parsed %>%
 
 val_ds <- ds$take(FLAGS$val_size)
 
+(b <- next_batch(ds))
 
 # TODO: Do dataset preprocessing here?
 # TODO: auxmix, scaling, and normalization

@@ -30,7 +30,7 @@ def get_logger():
 def record_generator(batch_generator,
                      output_dir,
                      num_batches, # need a parameter for 'ALL'... Inf?
-                     batches_per_file = 100,
+                     batches_per_file = 25,
                      logger=get_logger(),
                      unbatch = True,
                      test = False):
@@ -113,19 +113,15 @@ def record_generator(batch_generator,
           
         # coerce records to numpy arrays
         batch = batch_to_nparray(batch)
-        # print("Batch:", batch)
         validate_shape(batch)
-        # print("Passed validate_shape...")
         
         batch_size = next(iter(batch.values())).shape[0]
-        # print("batch_size:", batch_size)
         
         if test:
           examples.append(batch)
         
         if unbatch:
           batch = unbatch_elements(batch)
-          # print("after unbatch:", batch)
           for j in range(batch_size):
             _assert_item_has_expected_shape(batch[j],
                                             json_dict,
@@ -302,7 +298,7 @@ def _build_features(feature_dict, keys):
 
 
 def _write_to_tfrecord(batch, writer, batch_size=1):
-    # TODO: double check if this works with unbatched?  e.g. would send 32331 instead of 8
+    # TODO: check if this works with unbatched?  e.g. Possibly will send 32331 instead of 8
     NUM_SAMPS = batch_size # next(iter(batch.value()).shape[0]
     keys = list(batch.keys())
     
@@ -364,4 +360,118 @@ def _build_json_dict(batch):
 def batch_to_nparray(batch):
     np_batch = { k: np.asarray(v) for k,v in batch.items() }
     return np_batch
+
+
+
+
+
+
+# Process:
+# parquet -> pandas -> numpy -> batch generator -> tfrecord -> tfdataset
+
+import pandas as pd
+import numpy as np
+
+import itertools
+
+# Assumes cwd is project_dir (e.g. ~/internal/bengaliai)
+# from python.tfrecords.tfrecord_utils import record_generator
+# from python.data_tools import normalize_simple
+
+
+train_df_    = pd.read_csv('data/data-raw/train.csv')
+test_df_     = pd.read_csv('data/data-raw/test.csv')
+class_map_df = pd.read_csv('data/data-raw/class_map.csv')
+
+NO_VOWELS     = len(train_df_['vowel_diacritic'].unique())
+NO_CONSONANTS = len(train_df_['consonant_diacritic'].unique())
+NO_GRAPHEMES  = len(train_df_['grapheme_root'].unique())
+
+IMG_COLS = [str(i) for i in range(32332)]
+
+# TODO: add transformations to generator so training dataset is deterministic
+# Potential speed gain but will eat more Gb.
+def apply_transformations():
+  """See augmix.py and data_tools.py"""
+  pass
+
+
+def normalize_simple(image, maximum=255.0, v2=True):
+  if v2 is True and len(image.shape) == 1:
+    image = [image]
+  
+  normalized = np.asarray(map(lambda x: (x - np.mean(x)) / np.std(x), image)) \
+    if v2 else (maximum - image).astype(np.float64) / maximum
+  
+  return normalized
+
+
+# TOOD: add crop/resize/augmentation here
+def img_generator(df, norm=False, scale=True, batch_size=8):
+  
+  for i in range(0, len(df), batch_size):
+    image     = np.stack(df.iloc[i:i+batch_size][IMG_COLS].astype(np.int16).values, 0)
+    grapheme  = np.stack(df.iloc[i:i+batch_size]['grapheme_root'].astype(np.int16), 0)
+    vowel     = np.stack(df.iloc[i:i+batch_size]['vowel_diacritic'].astype(np.int16), 0)
+    consonant = np.stack(df.iloc[i:i+batch_size]['consonant_diacritic'].astype(np.int16), 0)
+    
+    batch = {'image':     normalize_simple(image, scale=scale) if norm else image,
+             'grapheme':  np.eye(NO_GRAPHEMES, dtype=np.int16)[grapheme],
+             'vowel':     np.eye(NO_VOWELS, dtype=np.int16)[vowel],
+             'consonant': np.eye(NO_CONSONANTS, dtype=np.int16)[consonant]}
+    yield batch
+
+
+def create_generators(chain=True, rng=4):
+  generators = []
+  
+  for i in range(rng):
+    train_df = pd.merge(
+    pd.read_parquet(f'data/data-raw/train_image_data_{i}.parquet'),
+    train_df_, on='image_id'
+    ).drop(['image_id'], axis=1)
+    
+    gen = img_generator(train_df)
+    generators.append(gen)
+    
+  return generators if not chain else itertools.chain(generators)
+
+  
+## PROCESS:
+# Call tfrecord apparatus on list of generators iteratively
+# Apply image augmentation: before tfrecord generation or after, (lazily upon tfdataset creation)
+# Split up into train/test data.  The "test_df_" is left blank intentionally. No labels.
+
+def make_tfrecords(outdir='/tmp/tfrecords', chain=True, rng=1, num_batches=6276):
+  ## Create tfdataset
+  generators = create_generators(chain, rng=rng)
+  
+  if not chain:
+    for gen in generators:
+      record_generator(batch_generator=gen, output_dir=outdir, num_batches=num_batches)
+  else:
+    record_generator(batch_generator=generator, output_dir=outdir, num_batches=num_batches)
+  
+  print("Finished creating tfrecords in %s", outdir)
+    
+  return True
+
+
+output_dir = src_dir = '/home/jason/internal/bengali/data/data-tfrecord'
+batch_generator = create_generators(False, 1)[0]
+num_batches = 100
+unbatch = True
+batch = next(batch_generator)
+batch = batch_to_nparray(batch)
+batch_generator = itertools.chain([batch], batch_generator)
+if unbatch:
+  batch = {k: v[0] for k, v in batch.items()}
+  batch['image'] = np.expand_dims(batch['image'], 0) # FIX THIS ELEGANTLY! Return shape (1, x)?
+json_dict = _build_json_dict(batch)
+
+print(json_dict) # (32332,) upon build_json
+
+with open(os.path.join(output_dir, JSON_FNAME), "w") as json_file:
+  json.dump(json_dict, json_file)
+
 
