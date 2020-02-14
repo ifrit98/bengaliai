@@ -11,6 +11,9 @@ if (!exists_here("FLAGS")) {
 
 (b <- next_batch(ds_raw))
 
+sess <- tf$Session()
+bb <- sess$run(b)
+
 ds <- ds_raw %>%
   dataset_map(function(x) {
     x$image <- tf$reshape(x$image, list(137L, 236L, 1L))
@@ -20,10 +23,12 @@ ds <- ds_raw %>%
   dataset_shuffle(10L) %>% 
   dataset_batch(FLAGS$batch_size) %>%
   dataset_prefetch(2L)
-
+  
+# nb <- next_batch(ds)
+# nbb <- sess$run(nb)
+# nbb[[2]]
+ 
 val_ds <- ds$take(FLAGS$val_size)
-
-(b <- next_batch(ds))
 
 # TODO: Do dataset preprocessing here?
 # TODO: auxmix, scaling, and normalization

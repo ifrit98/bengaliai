@@ -1,8 +1,9 @@
 
 source("flags.R")
-# source("dataset.R")
-source("dataset-npz.R")
+import_from("dataset.R", ds, val_ds)
+# source("dataset-npz.R")
 source("models/base.R")
+import_from("models/base.R", model)
 
 
 callbacks <- list()
@@ -17,7 +18,8 @@ hist <- model %>%
   fit(
     ds,
     validation_data = val_ds,
-    epochs = 10,
+    validation_steps = 10,
+    epochs = 100,
     steps_per_epoch = 25,
     callbacks = callbacks
   )

@@ -157,6 +157,32 @@ def crop_resize(img0, size=SIZE, pad=16):
     img = np.pad(img, [((l-ly)//2,), ((l-lx)//2,)], mode='constant')
     return cv2.resize(img,(size,size))
 
+"""
+Usage: crop_resize()
+
+df = pd.read_parquet(TRAIN[0])
+n_imgs = 8
+fig, axs = plt.subplots(n_imgs, 2, figsize=(10, 5*n_imgs))
+
+for idx in range(n_imgs):
+    #somehow the original input is inverted
+    img0 = 255 - df.iloc[idx, 1:].values.reshape(HEIGHT, WIDTH).astype(np.uint8)
+    #normalize each image by its max val
+    img = (img0*(255.0/img0.max())).astype(np.uint8)
+    img = crop_resize(img)
+
+    axs[idx,0].imshow(img0)
+    axs[idx,0].set_title('Original image')
+    axs[idx,0].axis('off')
+    axs[idx,1].imshow(img)
+    axs[idx,1].set_title('Crop & resize')
+    axs[idx,1].axis('off')
+plt.show()
+
+
+"""
+
+
 
 def read_parquet_file(data='TRAIN', idx=0):
     DATA = TRAIN if data == 'TRAIN' else TEST

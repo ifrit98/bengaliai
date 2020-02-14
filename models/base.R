@@ -1,4 +1,6 @@
-
+if (!exists_here("FLAGS")) {
+  import_from("flags.R", FLAGS)
+}
 
 input <- layer_input(shape = list(FLAGS$height, FLAGS$width, 1L))
 
@@ -33,4 +35,4 @@ model %>% compile(
   metrics = 'acc'
 )
 
-cat("Finished sourcing model\n")
+cat("Finished sourcing model with %s params\n", model$count_params())
