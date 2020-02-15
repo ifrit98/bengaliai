@@ -69,28 +69,24 @@ def resize(df, size=IMG_SIZE, need_progress_bar=True):
     resized = pd.DataFrame(resized).T
     return resized
     
-
+    
 # taken from https://www.kaggle.com/iafoss/image-preprocessing-128x128
-MEAN = [ 0.06922848809290576,  0.06922848809290576,  0.06922848809290576]
-STD  = [ 0.20515700083327537,  0.20515700083327537,  0.20515700083327537]
+MEAN = 0.06922848809290576
+STD  = 0.20515700083327537
 
-# Questionable ? Test this to make sure normalization is correct with above values
-def normalize(image):
+# Questionable ? Test this to make sure normalization is correct
+def normalize(image, use_global_moments=False):
   """Normalize input image channel-wise to zero mean and unit variance."""
-  image = image.transpose(2, 0, 1)  # Switch to channel-first
-  mean, std = np.array(MEAN), np.array(STD)
-  image = (image - mean[:, None, None]) / std[:, None, None]
-  return image.transpose(1, 2, 0)
+  if use_global_moments:
+    mean, std = np.array(MEAN), np.array(STD)
+  else:
+    mean, std = np.mean(image), np.std(image)
+    
+  return (image - mean) / std
 
 
-def normalize_simple(image, maximum=255.0, v2=True):
-  if v2 is True and len(image.shape) == 1:
-    image = [image]
-  
-  normalized = np.asarray(map(lambda x: (x - np.mean(x)) / np.std(x), image)) \
-    if v2 else (maximum - image).astype(np.float64) / maximum
-  
-  return normalized
+def normalize_simple(image):
+  return (image - np.mean(image)) / np.std(image)
 
 
 def get_dummies(df):

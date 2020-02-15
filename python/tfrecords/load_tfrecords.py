@@ -1,12 +1,11 @@
 from python.tfrecords.tfrecord_utils import replay_generator
 from python.data_tools import crop_resize
 
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-filepath = './data/data-tfrecord' # relative to project_dir
+filepath = './data/data-tfrecord-norm' # relative to project_dir
 
 ds_raw = replay_generator(filepath, parallel_files=1)
 

@@ -11,7 +11,7 @@ suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(deepR))
 suppressPackageStartupMessages(library(JSGutils))
 
-
-source("labels.R")
-source("misc.R")
+# TODO: source utils folder like Tomasz
+source("utils/labels.R")
+source("utils/misc.R")
 source_python("python/data_tools.py")

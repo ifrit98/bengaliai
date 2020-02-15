@@ -16,15 +16,15 @@ base <- input %>%
 
 root <- base %>% 
   layer_dense(192L) %>% 
-  layer_dense(168L, activation = 'softmax')
+  layer_dense(length(GPH$index), activation = 'softmax', name = "grapheme_root")
 
 cons <- base %>% 
   layer_dense(64L) %>% 
-  layer_dense(7L, activation = 'softmax')
+  layer_dense(length(CON$index), activation = 'softmax', name = "consonant")
 
 vowel <- base %>% 
   layer_dense(64L) %>% 
-  layer_dense(11L, activation = 'softmax')
+  layer_dense(length(VOW$index), activation = 'softmax', name = "vowel")
 
 
 model <- keras_model(input, list(root, cons, vowel))
