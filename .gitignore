@@ -4,9 +4,9 @@ logs
 logs/
 *.parquet
 *.npz
-*.Rproj.user
 *.pq
+*.Rproj.user
 .Rproj.user/
 .Rproj.user*
-*.Rproj.user
-
+.Rproj.user/*
+.Rhistory
