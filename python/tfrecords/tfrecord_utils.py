@@ -226,7 +226,6 @@ def _assert_batch_has_expected_shape(batch, expected_shape, unbatch):
     if list(batch[key].shape[1:]) != list(expected_shape[key]['shape']):
       raise ValueError(
         "Batch feature shapes do not match json dictionary")
-
   return True
 
 
@@ -248,7 +247,6 @@ def _assert_item_has_expected_shape(item, expected_shape, unbatch):
       print("expected_shape:", expected_shape[key]['shape'])
       raise ValueError(
         "Item shape does not match json dictionary")
-        
   return True
 
 
@@ -302,7 +300,6 @@ def _build_features(feature_dict, keys):
 
 
 def _write_to_tfrecord(batch, writer, batch_size=1):
-    # TODO: double check if this works with unbatched?  e.g. would send 32331 instead of 8
     NUM_SAMPS = batch_size # next(iter(batch.value()).shape[0]
     keys = list(batch.keys())
     
@@ -321,29 +318,21 @@ def _build_json_dict(batch):
     batch_keys = batch.keys()
     tensor_metadata = ['fnc', 'dtype', 'shape', 'previous_dtype']
     features = dict.fromkeys(batch_keys)
-
     for field in batch_keys:
         features[field] = dict.fromkeys(tensor_metadata)
-
-        # excluding batch dim
         if len(batch[field].shape[1:]) == 1 and batch[field].shape[1] == 1:
             features[field]['fnc'] = 'FixedLen'
         else:
             features[field]['fnc'] = 'FixedLenSequence'
-
         # get shape
         features[field]['shape'] = batch[field].shape[1:]  # exclude batch dim
-
         # get previous dtype
         features[field]['previous_dtype'] = batch[field].dtype.name
-        
         if 'complex' in features[field]['previous_dtype']:
             # complex128 will get casted to complex64 later
             features[field]['previous_dtype'] = 'complex64'
-
         # get fnc to use while reading
         fnc = FEAT_FNC_SWITCH[batch[field].dtype.name]
-        
         # get dtype
         if 'float' in fnc.__name__:
             dtype = 'tf.float32'
@@ -357,7 +346,6 @@ def _build_json_dict(batch):
             raise ValueError('Cant find datatype')
         
         features[field]['dtype'] = dtype
-
     return features
 
 

@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 
 """Read through for augmentation ideas:
+* https://www.kaggle.com/haqishen/augmix-based-on-albumentations *
   https://www.kaggle.com/corochann/bengali-seresnext-prediction-with-pytorch
   https://www.kaggle.com/iafoss/image-preprocessing-128x128
   https://www.kaggle.com/sgalella/bengali-ai-grapheme-classification-preprocessing
@@ -201,15 +202,7 @@ def visualize(original_image, aug_image):
     plt.show()
     
 
-# TODO: Write functionality to quickly retreive shaped data (137x236)
-# TODO: Choose best data import and augmentation methos to put in one linear script
-# TODO: Create data pipeline to preprocess and potentially store training data
-# TODO: Serializing examples with tf.Dataset vs on-the-fly augmentation?
-
 from python.import_pd import *
-
-# Visualize augmentations
-# TODO: Stepthrough & debug augment_and_mix() so you can use this architecture
 
 resized_df = resize(test1)
 

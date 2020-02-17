@@ -60,11 +60,11 @@ def resize(df, size=IMG_SIZE, need_progress_bar=True):
     resized = {}
     if need_progress_bar:
         for i in tqdm(range(df.shape[0])):
-            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT, WIDTH),(size, size))
+            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT, WIDTH), (size, size))
             resized[df.index[i]] = image.reshape(-1)
     else:
         for i in range(df.shape[0]):
-            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT, WIDTH),(size, size))
+            image = cv2.resize(df.loc[df.index[i]].values.reshape(HEIGHT, WIDTH), (size, size))
             resized[df.index[i]] = image.reshape(-1)
     resized = pd.DataFrame(resized).T
     return resized

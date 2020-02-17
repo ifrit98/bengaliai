@@ -1,7 +1,8 @@
 !#/bin/bash
 
 #Dependencies:
-  python3 -m pip install opencv-python tqdm pandas numpy matplotlib plotly
+  python3 -m pip install opencv-python tqdm pandas numpy matplotlib plotly pillow
 
 # Other deps
-  python3 -m pip install scipy sklearn seaborn 
+  python3 -m pip install scipy sklearn seaborn
+  

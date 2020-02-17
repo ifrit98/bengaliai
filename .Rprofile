@@ -8,8 +8,8 @@ library(readr)
 library(tibble)
 library(env.utils)
 suppressPackageStartupMessages(library(dplyr))
-suppressPackageStartupMessages(library(deepR))
-suppressPackageStartupMessages(library(JSGutils))
+# suppressPackageStartupMessages(library(deepR))
+# suppressPackageStartupMessages(library(JSGutils))
 
 # TODO: source utils folder like Tomasz
 source("utils/labels.R")

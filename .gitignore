@@ -4,9 +4,13 @@ logs
 logs/
 *.parquet
 *.npz
-*.Rproj.user
 *.pq
+*.Rproj.user
 .Rproj.user/
 .Rproj.user*
+<<<<<<< HEAD
 *.Rproj.user
+=======
+.Rproj.user/*
+>>>>>>> 636bae70ab0f16a9dead14eb5b64cccfe3b0e0ab
 .Rhistory

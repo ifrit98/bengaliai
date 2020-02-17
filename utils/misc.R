@@ -40,3 +40,35 @@ build_and_compile <-
                      metric = metric)
     model
   }
+
+
+
+restore_model <- function(run_dir, model_name = "model.R", return_flags = FALSE) {
+  run_dir <- as_run_dir(run_dir)
+  owd <- setwd(run_dir)
+  on.exit(setwd(owd), add = TRUE)
+  if (exists("FLAGS")) {
+    envs <- list()
+    caches <- list()
+    i <- 0
+    
+    while (exists("FLAGS")) {
+      add(i) <- 1
+      envs[[i]] <- pryr::where("FLAGS")
+      caches[[i]] <- FLAGS
+      rm(FLAGS, envir = envirs[[i]])
+    }
+    
+    on.exit(lapply(seq_len(i), function(ii) {
+      assign("FLAGS", caches[[i]], envir = envs[[i]])
+    }), add = TRUE)
+  }
+  
+  env.utils::import_from(model_name, model, FLAGS)
+  keras::load_model_weights_hdf5(model, "model-weights-best-checkpoint.hdf5")
+  
+  if (return_flags)
+    list(model = model, FLAGS = FLAGS)
+  else
+    model
+}

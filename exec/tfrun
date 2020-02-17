@@ -1,0 +1,26 @@
+#!/usr/bin/Rscript
+
+library(magrittr)
+library(purrr)
+
+args = commandArgs(trailingOnly = TRUE)
+
+print(args)
+
+run_dir = args[[1]]
+
+if (length(args) > 1) {
+  flags <- tail(args, -1)
+  flags %<>% strsplit('=')
+  names(flags) <- map(flags, ~.x[[2]])
+  flags %<>% map(~.x[[2]])
+} else 
+  flags <- NULL
+
+cat("Flags: \n")
+print(flags)
+
+cat("Run dir: \n")
+print(run_dir)
+
+tfruns::training_run(echo = FALSE, run_dir = run_dir, flags = flags)

@@ -1,16 +1,16 @@
 
 
 class_map <- readr::read_csv(
-  "data/data-raw/class_map.csv",
+  "csv/class_map.csv",
   skip = 0L,
   col_types = list(col_character(),
                    col_integer(),
                    col_character())
 )
 
-train_lab <- readr::read_csv("data/data-raw/train.csv")
-test_lab  <- readr::read_csv("data/data-raw/test.csv")
-sub       <- readr::read_csv("data/data-raw/sample_submission.csv")
+train_lab <- readr::read_csv("csv/train.csv")
+test_lab  <- readr::read_csv("csv/test.csv")
+sub       <- readr::read_csv("csv/sample_submission.csv")
 
 names(class_map) <- c("type", "index", "root")
 
@@ -34,21 +34,3 @@ GPH <- GRAPHEMES
 VOW <- VOWELS
 CON <- CONSONANTS
 
-
-# G <- tf$constant(GRAPHEMES$index, dtype = tf$int32)
-# V <- tf$constant(VOWELS$index, dtype = tf$int32)
-# C <- tf$constant(CONSONANTS$index, dtype = tf$int32)
-
-
-
-# library(forcats)
-# 
-# factor(tl$grapheme, levels = cm$root)
-# as.factor(tl$grapheme)
-# 
-# VOWELS
-# a <- tl[1,]
-# GRAPHEMES[1,]
-# 
-# tl$grapheme
-  

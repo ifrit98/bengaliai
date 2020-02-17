@@ -1,0 +1,6 @@
+open-cv
+seaborn
+pyarrow
+numpy
+pandas
+tensorflow >=1.15

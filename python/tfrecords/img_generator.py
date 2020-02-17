@@ -95,6 +95,22 @@ def make_tfrecords(outdir='/tmp/tfrecords', batch_size=8, rng=4, num_batches=Non
   return True
 
 
+def make_augmented_tfrecords(outdir='/tmp/tfrecords', batch_size=8, rng=4, num_batches=None):
+  if num_batches is None: # img_per_pq / batch_size
+    num_batches = int(np.floor(50208. / float(batch_size)))
+  
+  generators = create_generators(rng=rng, batch_size=batch_size)
+  
+  if rng > 1:
+    for gen in generators:
+      record_generator(batch_generator=gen, output_dir=outdir, num_batches=num_batches)
+  else:
+    record_generator(batch_generator=generators, output_dir=outdir, num_batches=num_batches)
+  
+  print("Finished creating tfrecords in %s", outdir)
+  return True
+
+
 OUTDIR = SRC_DIR = '/home/jason/internal/bengali/data/data-tfrecord-norm'
 make_tfrecords(SRC_DIR)
 # gen = create_generators()
