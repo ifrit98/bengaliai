@@ -69,6 +69,11 @@ def resize(df, size=IMG_SIZE, need_progress_bar=True):
     resized = pd.DataFrame(resized).T
     return resized
     
+
+def invert_and_reshape(img, height=137, width=236):
+  inverted = 255 - img.reshape(height, width) #.astype(np.uint8)
+  return inverted
+
     
 # taken from https://www.kaggle.com/iafoss/image-preprocessing-128x128
 MEAN = 0.06922848809290576

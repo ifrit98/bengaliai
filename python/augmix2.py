@@ -1,4 +1,4 @@
-
+# https://www.kaggle.com/haqishen/augmix-based-on-albumentations
 
 import os
 import cv2
@@ -8,30 +8,25 @@ import albumentations
 from PIL import Image, ImageOps, ImageEnhance
 import matplotlib.pyplot as plt
 
-# import torch
-# from torch.utils.data import Dataset
+import itertools
 
-data_dir = 'data/data-raw/'
-files_train = [f'train_image_data_{fid}.parquet' for fid in range(1)]
+# Assumes cwd is project_dir (e.g. ~/internal/bengaliai)
+# from python.tfrecords.tfrecord_utils import record_generator
+from python.data_tools import crop_resize, normalize, invert_and_reshape
+
 
 HEIGHT = 137
 WIDTH = 236
-# SIZE = 128
+SIZE = 128
+IMG_COLS = [str(i) for i in range(32332)]
 
-df_train = pd.read_csv(os.path.join('csv/train.csv'))
+train_df_    = pd.read_csv('csv/train.csv')
+test_df_     = pd.read_csv('csv/test.csv')
+class_map_df = pd.read_csv('csv/class_map.csv')
 
-def read_data(files):
-    tmp = []
-    for f in files:
-        F = os.path.join(data_dir, f)
-        data = pd.read_parquet(F)
-        tmp.append(data)
-    tmp = pd.concat(tmp)
-    data = tmp.iloc[:, 1:].values
-    return data
-
-# train data
-# data_train = read_data(files_train)
+NO_VOWELS     = len(train_df_['vowel_diacritic'].unique())
+NO_CONSONANTS = len(train_df_['consonant_diacritic'].unique())
+NO_GRAPHEMES  = len(train_df_['grapheme_root'].unique())
 
 
 def int_parameter(level, maxval):
@@ -156,10 +151,10 @@ augmentations_all = [
     autocontrast, equalize, posterize, rotate, solarize, shear_x, shear_y,
     translate_x, translate_y, color, contrast, brightness, sharpness
 ]
-
-def normalize(image):
-    """Normalize input image channel-wise to zero mean and unit variance."""
-    return image - 127
+ 
+# def normalize(image):
+#     """Normalize input image channel-wise to zero mean and unit variance."""
+#     return image - 127
 
 # Expects uint8 values in range (0, 255)
 def apply_op(image, op, severity):
@@ -167,6 +162,7 @@ def apply_op(image, op, severity):
     pil_img = Image.fromarray(image)  # Convert to PIL.Image
     pil_img = op(pil_img, severity)
     return np.asarray(pil_img)
+
 
 def augment_and_mix(image, severity=3, width=3, depth=-1, alpha=1.):
     """Perform AugMix augmentations and compute mixture.
@@ -194,14 +190,46 @@ def augment_and_mix(image, severity=3, width=3, depth=-1, alpha=1.):
     return mixed
 
 
+# augment = True
+# batch_size=8
+# severity=3
+# width=3
+# alpha=1.
+# size=128
+# norm=True
+# i=0
+# def transform_generator(df, augment=False, norm=True, batch_size=8, severity=3, width=3, alpha=1., size=128):
+#   augmix  = lambda x: augment_and_mix(x, severity=severity, width=width, alpha=alpha)
+#   crop    = lambda x: crop_resize(x, size=size)
+#   scale   = lambda x: x / x.max()
+#   rng = range(batch_size)
+#   
+#   for i in range(0, len(df), batch_size):
+#     images    = np.stack(df.iloc[i:i+batch_size][IMG_COLS].astype(np.uint8).values)
+#     grapheme  = np.stack(df.iloc[i:i+batch_size]['grapheme_root'], 0)
+#     vowel     = np.stack(df.iloc[i:i+batch_size]['vowel_diacritic'], 0)
+#     consonant = np.stack(df.iloc[i:i+batch_size]['consonant_diacritic'], 0)
+#     inverted  = np.asarray(list(map(invert_and_reshape, images)))
+#     cropped   = np.asarray(list(map(crop, inverted)))
+#     augmented = np.asarray(list(map(augmix, cropped))) if augment else cropped
+#     normed    = np.asarray(list(map(normalize, augmented))) # TODO: small negative values OK?
+#     images    = np.asarray(list(map(scale, normed if norm else augmented)))
+#     
+#     batch = {'image':     images,
+#              'grapheme':  grapheme,
+#              'vowel':     vowel,
+#              'consonant': consonant}
+#     yield batch
+
+
 def transform_and_plot(dataset, severity=3, width=3, depth=-1, alpha=1., size=128):
   from pylab import rcParams
-  rcParams['figure.figsize'] = 20,10
-  f, axarr = plt.subplots(2,5)
-  for i in range(2):
-    for p in range(5):
+  rcParams['figure.figsize'] = 20, 10
+  f, axarr = plt.subplots(3,2)
+  for i in range(3):
+    for p in range(2):
       idx = np.random.randint(0, len(dataset))
-      img = dataset.iloc[idx][:-4].values.astype(np.uint8) 
+      img = dataset.iloc[idx][:-4].values.astype(np.uint8)
       label = dataset.iloc[idx][-4:-1].values.astype(np.uint8)
       img = img.reshape(137, 236) #.astype(np.float32)
       img = cv2.resize(img, (size, size))
@@ -215,25 +243,44 @@ def transform_and_plot(dataset, severity=3, width=3, depth=-1, alpha=1., size=12
   plt.show()
 
 
-dataset = pd.merge(
-  pd.read_parquet('data/data-raw/train_image_data_0.parquet'),
-  df_train, on='image_id'
-  ).drop(['image_id'], axis=1)
-  
-image = dataset.iloc[0][:-4].values.astype(np.uint8)
-label = dataset.iloc[0][-4:-1].values.astype(np.int32)
+# dataset = pd.merge(
+#   pd.read_parquet('data/data-raw/train_image_data_0.parquet'),
+#   train_df_, on='image_id'
+#   ).drop(['image_id'], axis=1)
+#   
+# gen = transform_generator(dataset, True)
+#   
+# image = dataset.iloc[0][:-4].values.astype(np.uint8)
+# label = dataset.iloc[0][-4:-1].values.astype(np.int32)
 
 # Look at transformation effects
-transform_and_plot(dataset, severity=3, width=3, alpha=1.)
-
-# DIRTY
-transform_and_plot(dataset, severity=7, width=7, alpha=5.)
-
-# NASTY
-transform_and_plot(dataset, severity=12, width=12, alpha=9.)
+# transform_and_plot(dataset, severity=3, width=3, alpha=1.)
+# 
+# # DIRTY
+# transform_and_plot(dataset, severity=7, width=7, alpha=5.)
+# 
+# # NASTY
+# transform_and_plot(dataset, severity=12, width=12, alpha=9.)
 
 
 ##
 # TODO: create aug images generators, then chain in TFRECORD serialization!
 # set generators at increasing severity params (1, 3, 5, 7, etc.)
 ##
+
+
+# data_dir = 'data/data-raw/'
+# files_train = [f'train_image_data_{fid}.parquet' for fid in range(1)]
+
+# def read_data(files):
+#     tmp = []
+#     for f in files:
+#         F = os.path.join(data_dir, f)
+#         data = pd.read_parquet(F)
+#         tmp.append(data)
+#     tmp = pd.concat(tmp)
+#     data = tmp.iloc[:, 1:].values
+#     return data
+# 
+# train data
+# data_train = read_data(files_train)
