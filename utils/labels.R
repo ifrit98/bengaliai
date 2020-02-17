@@ -18,7 +18,7 @@ cm <- class_map
 tl <- train_lab
 ts <- test_lab
 
-grapheme_idx <- 1:167
+grapheme_idx <- 1:168
 vowel_diacritic_idx <- 169:179
 consonant_diacritic_idx <- 180:186
 

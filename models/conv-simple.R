@@ -66,3 +66,7 @@ model %>% compile(
 )
 
 cat("Finished sourcing model with %s params\n", model$count_params())
+
+
+# TODO: Try group normalization/efficient net/adabound?
+# https://www.kaggle.com/ipythonx/keras-grapheme-gridmask-augmix-in-efficientnet

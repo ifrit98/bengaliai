@@ -9,4 +9,4 @@ logs/
 .Rproj.user/
 .Rproj.user*
 *.Rproj.user
-
+.Rhistory

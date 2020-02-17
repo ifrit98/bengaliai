@@ -15,3 +15,7 @@ suppressPackageStartupMessages(library(JSGutils))
 source("utils/labels.R")
 source("utils/misc.R")
 source_python("python/data_tools.py")
+
+# test data
+X <- tf$random$normal(shape = list(8L, 256L, 3L, 16L))
+x <- tf$random$normal(shape = list(8L, 256L, 16L))
