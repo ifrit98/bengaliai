@@ -1,45 +1,5 @@
 
 
-#' resblock with bottleneck from the Exploring Normalization FB paper (01/2017)
-#' modified as in: https://www.kaggle.com/h030162/version1-0-9696
-#' @export
- resblock_batchnorm_bottle_2d <-
-  # function(x, filters, planes, groups, reduction, stride, downsample, base_width, renorm = FALSE, kernel_size = 3L) {
-           # inplanes, planes, groups, reduction, stride, downsample
-  function(x, filters = 64L, downsample = TRUE, renorm = FALSE, kernel_size = 3L) {
-    a <- x %>%
-      layer_conv_2d(filters, 1, padding = 'same') %>%
-      layer_batch_normalization() %>%
-      layer_activation_relu()
-    
-    b <- a %>%
-      layer_conv_2d(filters, kernel_size, padding = 'same') %>%
-      layer_batch_normalization(renorm = renorm) %>%
-      layer_activation_relu()
-    
-    c <- b %>%
-      layer_conv_2d(filters, kernel_size, padding = 'same') %>%
-      layer_batch_normalization(renorm = renorm)
-    
-    shape <- x$shape$as_list()
-    og_filters <- shape[[length(shape)]]
-    
-    
-    residual <-
-      if (downsample) {
-        residual <- layer_conv_2d(x, og_filters, 1, padding = 'same')
-      } else x
-    
-    se_out <- c %>% 
-      se_module(2L) %>% 
-      layer_conv_2d(og_filters, 1, padding = 'same')
-    
-    out <- layer_add(list(se_out, residual))
-
-    out
-  }
-
-
 se_module <- function(x, filters, reduction_factor = 2L) {
   
   reduced <- filters %/% reduction_factor

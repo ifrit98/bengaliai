@@ -1,6 +1,5 @@
 #!/usr/bin/Rscript
 
-source("flags.R")
 
 parser <- Xmisc::ArgumentParser$new()
 
@@ -20,6 +19,7 @@ args = parser$get_args()
 
 setwd(args$projdir)
 options(tfruns.runs_dir = args$rundir)
+source("flags.R")
 
 rundir = tfruns::unique_run_dir(seconds_scale = 3)
 
@@ -36,3 +36,4 @@ system(paste0('echo run_dir: ', rundir))
 setwd(rundir)
 
 system(paste0('\n tfrun ', rundir))
+  

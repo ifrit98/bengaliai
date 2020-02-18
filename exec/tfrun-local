@@ -35,5 +35,4 @@ system(paste0('echo run_dir: ', rundir))
 
 setwd(rundir)
 
-system(paste0('\n tfrun ', dir))
-
+system(paste0('\n tfrun ', rundir))

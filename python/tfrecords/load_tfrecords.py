@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # TODO: instead of hardcoding link, dynamically update with .FILEPATH variable
-filepath = '/home/jason/internal/bengali/data/data-tfrecord-norm/' # relative to project_dir
+filepath = '/home/jason/internal/bengali/data/data-tfrecord-aug/' # relative to project_dir
 
 ds_raw = replay_generator(filepath, parallel_files=1)
 
