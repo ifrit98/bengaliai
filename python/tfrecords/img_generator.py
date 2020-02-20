@@ -29,6 +29,22 @@ NO_GRAPHEMES  = len(train_df_['grapheme_root'].unique())
 IMG_COLS = [str(i) for i in range(32332)]
 
 
+def preprocess_generator(df, norm=True, img_size=128):
+  crop = lambda x: crop_resize(x, size=img_size)
+  
+  for i in range(len(df)):
+    image    = df.iloc[i][1:].astype(np.uint8).values
+    inverted = invert_and_reshape(image)
+    cropped  = crop(inverted)
+    
+    if norm:
+      image = normalize(cropped)
+    else:
+      image = cropped
+      
+    yield image
+  
+
 # GOOD 92% acc from just this alone.  Don't change, but add augmentations to this
 def img_generator(df, norm=True, batch_size=8, img_size=128, onehot=False):
   crop = lambda x: crop_resize(x, size=img_size)
@@ -125,8 +141,8 @@ def make_tfrecords(outdir='/tmp/tfrecords', batch_size=8, rng=4, num_batches=Non
   return True
 
 
-OUTDIR = SRC_DIR = '/home/jason/internal/bengali/data/data-tfrecord-aug'
-make_tfrecords(SRC_DIR)
+#OUTDIR = SRC_DIR = '/home/jason/internal/bengali/data/data-tfrecord-aug'
+#make_tfrecords(SRC_DIR)
 # gen = create_generators(rng=2)
 
 
