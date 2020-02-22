@@ -4,7 +4,7 @@ reticulate::source_python("python/load_test_data.py")
 
 
 # import_from("python/tfrecords/img_generator.py", "test_generator")
-
+# TODO: add docopt to scripts
 # TODO: Restore model and predict on test data
 # TODO: preprocess test image.  e.g. crop/resize/normalize
 # TODO: Format outputs like sample_submission.csv
@@ -21,6 +21,7 @@ model <- restore_model(rundir)
 
 
 npa <- load_test_data()
+
 
 predictions <- vector("list", 12L*3L)
 
