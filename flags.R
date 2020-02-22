@@ -9,7 +9,10 @@ FLAGS <- tensorflow::flags(
   flag_integer("val_size", 100),
   flag_boolean("global_pool", TRUE),
   flag_string("source_dir", "data/data-tfrecord-norm"),
-  flag_string("model", "SE_resnet50")
+  flag_string("model", "SE_resnet50"),
+  flag_integer("no_blocks", 3),
+  flag_integer("patience", 40),
+  flag_integer("valid_freq", 3)
 )
 
 FLAGS$model <- sprintf("models/%s.R", FLAGS$model)

@@ -44,7 +44,7 @@ build_and_compile <-
 
 
 restore_model <- function(run_dir, model_name = "model.R", return_flags = FALSE) {
-  run_dir <- as_run_dir(run_dir)
+  run_dir <- tfruns::as_run_dir(run_dir)
   owd <- setwd(run_dir)
   on.exit(setwd(owd), add = TRUE)
   if (exists("FLAGS")) {
@@ -65,7 +65,7 @@ restore_model <- function(run_dir, model_name = "model.R", return_flags = FALSE)
   }
   
   env.utils::import_from(model_name, model, FLAGS)
-  keras::load_model_weights_hdf5(model, "model-weights-best-checkpoint.hdf5")
+  keras::load_model_weights_hdf5(model, "model-weights-best-checkpoint.h5")
   
   if (return_flags)
     list(model = model, FLAGS = FLAGS)
@@ -73,6 +73,16 @@ restore_model <- function(run_dir, model_name = "model.R", return_flags = FALSE)
     model
 }
 
+# For predicting with 3 softmax outputs (168, 11, 7), 12 == number of test examples
+argmax <- 
+  function(x) { lapply(x, function(y) lapply(1:12, function(i) y[i,] %>% which.max())) }
+# argmax <- function(x) lapply(x, function(y) which.max(y[1,]))
+
+
+timestamp <- function() lubridate::now() %>% stringr::str_replace(" ", "_")
+
+
+is_scalar <- function(x) identical(length(x), 1L)
 
 # resblock with bottleneck from the Exploring Normalization FB paper (01/2017)
 # modified as in: https://www.kaggle.com/h030162/version1-0-9696

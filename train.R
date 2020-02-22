@@ -18,9 +18,9 @@ callbacks <-
     callback_reduce_lr_on_plateau(monitor = "grapheme_root_loss"),
     callback_reduce_lr_on_plateau(monitor = "consonant_loss"),
     callback_reduce_lr_on_plateau(monitor = "vowel_loss"),
-    callback_early_stopping(monitor = "grapheme_root_loss", patience = 25),
+    callback_early_stopping(monitor = "grapheme_root_loss", patience = FLAGS$patience),
     callback_model_checkpoint("model-weights-best-checkpoint.h5", monitor = "grapheme_root_acc"),
-    callback_tensorboard(file.path("logs", stringr::str_squish(lubridate::now())))
+    callback_tensorboard(file.path("logs", timestamp()))
   )
 
 
@@ -29,6 +29,7 @@ hist <- model %>%
     ds,
     validation_data = val_ds,
     validation_steps = FLAGS$val_size,
+    validation_freq = FLAGS$valid_freq,
     epochs = FLAGS$epochs,
     steps_per_epoch = FLAGS$steps_per_epoch,
     callbacks = callbacks
@@ -38,7 +39,7 @@ plot(hist)
 
 qs::qsave(hist, "history.qs")
 
-hist <- qs::qread("history-SEnet.qs")
+# hist <- qs::qread("history-SEnet.qs")
 
 # TODO: investigate images after reading TFRECORDS -> MAKE SURE THEY ARE LEGIT
 # TODO: Try CLR in different modes.  [Triangular, Exponential]

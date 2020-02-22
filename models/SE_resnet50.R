@@ -1,4 +1,6 @@
-
+if (!exists_here("FLAGS")) {
+  import_from("flags.R", FLAGS)
+}
 
 se_module <- function(x, filters, reduction_factor = 2L) {
   
@@ -25,7 +27,7 @@ make_layer <-
            reduction_factor,
            expansion,
            stride = 1) {
-    
+    # browser()
     shape <- x$shape$as_list()
     downsample <- NULL
     inchannels <- shape[[length(shape)]]
@@ -99,7 +101,8 @@ SE_Net <-
            no_blocks = 1L,
            reduction = 16L) {
     
-  if (identical(length(no_blocks), 1L)) no_blocks %<>% rep(4L)
+  if (is_scalar(no_blocks)) no_blocks %<>% rep(4L)
+  # browser()
     
   input <- layer_input(shape = list(128L, 128L, 1L))
   
@@ -177,12 +180,12 @@ SE_Net <-
   )
   
   model
-  }
+}
 
 # TODO: try increasing strtide and max pooling down to 1x1 or 8x8
 
 
-model <- SE_Net()
+model <- SE_Net(no_blocks = FLAGS$no_blocks)
 
-cat("Number of parameters:", model$count_params())
+cat("Number of parameters:", model$count_params(), "\n")
 
