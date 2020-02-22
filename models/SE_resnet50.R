@@ -27,7 +27,6 @@ make_layer <-
            reduction_factor,
            expansion,
            stride = 1) {
-    # browser()
     shape <- x$shape$as_list()
     downsample <- NULL
     inchannels <- shape[[length(shape)]]
