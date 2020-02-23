@@ -32,9 +32,9 @@ predict <- function(input) {
 
 
 
-evaluate <- function() {
+evaluate_batch <- function(ds) {
   
-  nb <- next_batch(val_ds)
+  nb <- next_batch(ds)
   batch  <- sess$run(nb)
   input  <- batch[[1]]
   labels <- batch[[2]]
@@ -69,14 +69,23 @@ evaluate <- function() {
   out <- c(grapheme_acc, consonant_acc, vowel_acc)
   names(out) <- c("grapheme_acc", "consonant_acc", "vowel_acc")
   
-  out
+  list(out, preds, truth)
 }
 
 
 
 for (i in seq(3)) {
-  accuracy <- evaluate()
+  c(accuracy, preds, truth) %<-% evaluate_batch(val_ds)
   message("Success!")
+  
+  # TODO: Confusion matrix (factors with `yardstick::conf_mat()`?)
+  gph <- bind_cols(list(preds$grapheme_root, truth$grapheme_root))
+  con <- bind_cols(list(preds$consonant_diacritic, truth$vowel_diacritic))
+  vow <- bind_cols(list(preds$vowel_diacritic, truth$vowel_diacritic))
+  names(gph) <- c("preds", "truth")
+  names(con) <- c("preds", "truth")
+  names(vow) <- c("preds", "truth")
+  
   cat("Batch ", i, "Grapheme accuracy:",  accuracy[[1]], "\n")
   cat("Batch ", i, "Consonant accuracy:", accuracy[[2]], "\n")
   cat("Batch ", i, "Vowel accuracy:",     accuracy[[3]], "\n")
