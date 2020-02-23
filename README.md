@@ -8,6 +8,16 @@ Dataset comes from Bengali.AI, which hopes to democratize and accelerate researc
 
 This dataset contains the image of a handwritten Bengali grapheme and this model separately classifies the three constituent elements in the image: grapheme root, vowel diacritics, and consonant diacritics.
 
+### Load and predict with trained model
+Simply clone this repo and run the /eval.R script 
+```
+git clone https://github.com/ifrit98/bengaliai.git
+cd bengaliai
+chmod +x eval.R
+./eval.R
+```
+
+
 
 ### Data Pipeline
 ```
