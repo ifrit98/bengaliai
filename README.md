@@ -23,19 +23,19 @@ chmod +x eval.R
 
 ### Data Preprocessing Pipeline
 ```
- | parquet (.pq) files (32332,)  |
+ | parquet (.pq) files (32332,)  |  # Images come in compressed format as 1D vectors
               -> 
- | invert(img) { 255 - img }     |
+ | invert(img) { 255 - img }     |  # Simple intensity inversion
               -> 
- | Crop & Resize (128, 128)      |
+ | Crop & Resize (128, 128)      |  # Makes the images square, and slightly smaller
               -> 
- | augment(x, img) { op(img) }   |  
+ | augment(img, op) { op(img) }  |  # Randomly samples from one (or more) impairments to apply
               ->                  
  | normalize(img) {              |
- |   (img - mean(img)) / sd(img) |
+ |   (img - mean(img)) / sd(img) |  # normalize image to unit mean, variance
  |  }                            | 
-              -> 
- | scale(img) { img / max(img) } |
+              ->
+ | scale(img) { img / max(img) } |  # Scale values to (0,1)
 ```
 - We ultimately end up with an image that has been impaired with one (or more) of the following augmentations.
 `Augment ops = [autocontrast, equalize, posterize, rotate, solarize, shear_x, shear_y, translate_x, translate_y, color, contrast, brightness, sharpness]
