@@ -27,6 +27,9 @@ This dataset contains the image of a handwritten Bengali grapheme and this model
 ```
  
 ### Model Architecture
+#### Squeeze and Excitation Networks
+![alt_text](HYPERLINK "Diagram of a Squeeze-and-Excitation building block")
+- [arXiv 1709.01507](https://arxiv.org/abs/1709.01507)
 
 ![alt text](https://raw.githubusercontent.com/ifrit98/bengaliai/master/plots/history.png "Fit Call History ~180 epochs")
 
