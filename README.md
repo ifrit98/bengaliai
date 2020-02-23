@@ -4,9 +4,9 @@ Bengali is the 5th most spoken language in the world with hundreds of million of
 
 Optical character recognition is particularly challenging for Bengali. While Bengali has 49 letters (to be more specific 11 vowels and 38 consonants) in its alphabet, there are also 18 potential diacritics, or accents. This means that there are many more graphemes, or the smallest units in a written language. The added complexity results in ~13,000 different grapheme variations (compared to English’s 250 graphemic units).
 
-Dataset comes from Bengali.AI, which hopes to democratize and accelerate research in Bengali language technologies and promote machine learning education.
+![alt_text](https://raw.githubusercontent.com/ifrit98/bengaliai/master/bengali.png "Bengali Graphemes")
 
-This dataset contains the image of a handwritten Bengali grapheme and this model separately classifies the three constituent elements in the image: grapheme root, vowel diacritics, and consonant diacritics.
+This dataset comes from [Bengali.AI](https://bengali.ai/learn/), which hopes to democratize and accelerate research in Bengali language technologies and promote machine learning education.  The dataset contains the image of a handwritten Bengali grapheme and this model separately classifies the three constituent elements in the image: grapheme root, vowel diacritics, and consonant diacritics.
 
 ### Load and predict with trained model
 Simply clone this repo and run the /eval.R script 
