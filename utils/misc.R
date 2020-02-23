@@ -76,7 +76,6 @@ restore_model <- function(run_dir, model_name = "model.R", return_flags = FALSE)
 # For predicting with 3 softmax outputs (168, 11, 7), 12 == number of test examples
 argmax <- 
   function(x) { lapply(x, function(y) lapply(1:12, function(i) y[i,] %>% which.max())) }
-# argmax <- function(x) lapply(x, function(y) which.max(y[1,]))
 
 
 timestamp <- function() lubridate::now() %>% stringr::str_replace(" ", "_")

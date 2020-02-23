@@ -1,36 +1,24 @@
 #!/usr/bin/Rscript
-# TODO: add docopt to scripts
+
+argmax <- 
+  function(x) { lapply(x, function(y) lapply(1:32, function(i) y[i,] %>% which.max())) }
 
 reticulate::source_python("python/load_test_data.py")
 
-# if (length(args) < 2)
-#   stop("Usage: eval.R RUNDIR CSVFILE")
-# 
-# args    <- commandArgs(TRUE)
-# rundir  <- normalizePath(file.path("~/internal/runs/", args[[1]]))
-# csvfile <- normalizePath(args[[2]])
+rundir <- ("./")
 
-rundir <- normalizePath("~/internal/runs/2020-02-22T13-49-35.272Z")
-# rundir <- normalizePath("~/internal/runs/2020-02-17T18-53-46.997Z")
-csvfile <- paste0("submissions/", timestamp(), ".csv")
 
 model <- restore_model(rundir)
 
-
-# testfiles <- list('data/data-raw/test_image_data_0.parquet')
-npa <- load_test_data()
-
+import_from("dataset.R", val_ds)
+  
 
 sess <- tf$compat$v1$keras$backend$get_session()
 
 
+
 predict <- function(input) {
-  input <- input %>% 
-    as_tensor(dtype = tf$float32) %>% 
-    layer_expand_dims()
-  
-  raw_probs <- sess$run(model(input)) 
-  # browser()
+  raw_probs <- sess$run(model(input))
   
   preds <- raw_probs %>% 
     argmax() %>% 
@@ -43,36 +31,54 @@ predict <- function(input) {
 }
 
 
-preds <- npa %>% 
-  predict() %>% 
-  tibble::rowid_to_column(var = "rowid")
 
-
-predictions <- lapply(purrr::transpose(preds), function(pred) {
-  idx <- pred$rowid - 1L
-  row_id.root  <- paste0("Test_", idx, "_grapheme_root")
-  row_id.cons  <- paste0("Test_", idx, "_consonant_diacritic")
-  row_id.vowel <- paste0("Test_", idx, "_vowel_diacritic")
+evaluate <- function() {
   
-  cons <- c(row_id.cons, pred$consonant_diacritic)
-  root <- c(row_id.root, pred$grapheme_root)
-  vow  <- c(row_id.vowel, pred$vowel_diacritic)
-
+  nb <- next_batch(val_ds)
+  batch  <- sess$run(nb)
+  input  <- batch[[1]]
+  labels <- batch[[2]]
   
-  predictions <- list(cons, root, vow) %>%  
+  preds <- input %>% 
+    as_tensor(tf$float32) %>% 
+    predict() %>% 
+    tibble::rowid_to_column(var = "rowid")
+  
+  
+  labs <- vector("list", 32)
+  
+  for (i in seq(32)) {
+    labs[[i]] <- lapply(labels, function(x) which.max(x[i,]))
+    names(labs[[i]]) <- c("grapheme_root", "consonant_diacritic", "vowel_diacritic")
+  }
+  
+  truth <- labs %>% 
     listarrays::bind_as_rows() %>% 
-    tibble::as_tibble()
+    tibble::as_tibble() %>% 
+    tidyr::unnest(cols = names(.))
   
-  names(predictions) <- c("row_id", "target")
   
-  predictions
-})
+  preds$rowid <- NULL
+  logits <- (preds == truth) %>% tibble::as_tibble()
+  
+  
+  grapheme_acc  <- logits %>% { sum(.$grapheme_root) / length(.$grapheme_root) }
+  consonant_acc <- logits %>% { sum(.$consonant_diacritic) / length(.$consonant_diacritic) }
+  vowel_acc     <- logits %>% { sum(.$vowel_diacritic) / length(.$vowel_diacritic) }
+  
+  out <- c(grapheme_acc, consonant_acc, vowel_acc)
+  names(out) <- c("grapheme_acc", "consonant_acc", "vowel_acc")
+  
+  out
+}
 
-str(predictions)
-csv_preds <- dplyr::bind_rows(predictions)
-csv_preds$target <- as.double(csv_preds$target)
 
 
-readr::write_csv(csv_preds, csvfile)
+for (i in seq(3)) {
+  accuracy <- evaluate()
+  message("Success!")
+  cat("Batch ", i, "Grapheme accuracy:",  accuracy[[1]], "\n")
+  cat("Batch ", i, "Consonant accuracy:", accuracy[[2]], "\n")
+  cat("Batch ", i, "Vowel accuracy:",     accuracy[[3]], "\n")
+}
 
-message("Success!")
