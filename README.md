@@ -19,7 +19,7 @@ chmod +x eval.R
 
 
 
-### Data Pipeline
+### Data Preprocessing Pipeline
 ```
  | parquet (.pq) files (32332,)  |
               -> 
@@ -27,14 +27,18 @@ chmod +x eval.R
               -> 
  | Crop & Resize (128, 128)      |
               -> 
- | augment(x, img) { op(img) }   |  # Augment ops: autocontrast, equalize, posterize, rotate, solarize, shear_x, shear_y, 
-              ->                    #              translate_x, translate_y, color, contrast, brightness, sharpness
+ | augment(x, img) { op(img) }   |  
+              ->                  
  | normalize(img) {              |
  |   (img - mean(img)) / sd(img) |
  |  }                            | 
               -> 
  | scale(img) { img / max(img) } |
 ```
+- We ultimately end up with an image that has been impaired with one (or more) of the following augmentations.
+`Augment ops = [autocontrast, equalize, posterize, rotate, solarize, shear_x, shear_y, translate_x, translate_y, color, contrast, brightness, sharpness]
+`
+![Impairments](https://raw.githubusercontent.com/ifrit98/bengaliai/master/impairments.png "side-by-side impairments")
 
 ### Results
 #### History over ~180 epochs
