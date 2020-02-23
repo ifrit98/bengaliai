@@ -190,14 +190,14 @@ def augment_and_mix(image, severity=3, width=3, depth=-1, alpha=1.):
     return mixed
 
 
-# augment = True
-# batch_size=8
-# severity=3
-# width=3
-# alpha=1.
-# size=128
-# norm=True
-# i=0
+augment = True
+batch_size=8
+severity=3
+width=3
+alpha=1.
+size=128
+norm=True
+i=0
 # def transform_generator(df, augment=False, norm=True, batch_size=8, severity=3, width=3, alpha=1., size=128):
 #   augmix  = lambda x: augment_and_mix(x, severity=severity, width=width, alpha=alpha)
 #   crop    = lambda x: crop_resize(x, size=size)
@@ -243,24 +243,48 @@ def transform_and_plot(dataset, severity=3, width=3, depth=-1, alpha=1., size=12
   plt.show()
 
 
+
+def plot_side_by_side(dataset, severity=3, width=3, depth=-1, alpha=1., size=128):
+  from pylab import rcParams
+  # rcParams['figure.figsize'] = 20, 10
+  f, axarr = plt.subplots(3,2)
+  for i in range(3):
+    for p in range(2):
+      img = dataset.iloc[i].values.astype(np.uint8)
+      img = img.reshape(137, 236) #.astype(np.float32)
+      img = cv2.resize(img, (size, size))
+      if int(p) == 1:
+        img = augment_and_mix(img, severity=severity, width=width, depth=depth, alpha=alpha)
+      img = img.astype(np.float32) / 255.
+      img = 1 - img
+      axarr[i][p].imshow(img)
+      axarr[i][p].set_title(idx)
+  plt.show()
+
+
 # dataset = pd.merge(
 #   pd.read_parquet('data/data-raw/train_image_data_0.parquet'),
 #   train_df_, on='image_id'
 #   ).drop(['image_id'], axis=1)
-#   
-# gen = transform_generator(dataset, True)
-#   
-# image = dataset.iloc[0][:-4].values.astype(np.uint8)
-# label = dataset.iloc[0][-4:-1].values.astype(np.int32)
+
+dataset = pd.read_parquet('data/data-raw/test_image_data_0.parquet')
+dataset = dataset[IMG_COLS]
+
+plot_side_by_side(dataset, severity=9, width=5, alpha=5.)
+
+gen = transform_generator(dataset, True)
+
+image = dataset.iloc[0][:-4].values.astype(np.uint8)
+label = dataset.iloc[0][-4:-1].values.astype(np.int32)
 
 # Look at transformation effects
-# transform_and_plot(dataset, severity=3, width=3, alpha=1.)
-# 
-# # DIRTY
-# transform_and_plot(dataset, severity=7, width=7, alpha=5.)
-# 
-# # NASTY
-# transform_and_plot(dataset, severity=12, width=12, alpha=9.)
+transform_and_plot(dataset, severity=3, width=3, alpha=1.)
+
+# DIRTY
+transform_and_plot(dataset, severity=7, width=7, alpha=5.)
+
+# NASTY
+transform_and_plot(dataset, severity=12, width=12, alpha=9.)
 
 
 ##
