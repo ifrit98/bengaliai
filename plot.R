@@ -7,7 +7,7 @@ hist <- qs::qread(histfile)
 outfile <- "history.png" #file.path(rundir, "history.png")
 
 png(filename = outfile)
-
 plot(hist)
-
 dev.off()
+
+png(filename = "plots/")
